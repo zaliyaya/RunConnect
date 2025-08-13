@@ -1,0 +1,45 @@
+import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+import { useTelegram } from './hooks/useTelegram'
+import Layout from './components/Layout'
+import HomePage from './pages/HomePage'
+import ClubsPage from './pages/ClubsPage'
+import EventsPage from './pages/EventsPage'
+import ProfilePage from './pages/ProfilePage'
+import ClubDetailPage from './pages/ClubDetailPage'
+import EventDetailPage from './pages/EventDetailPage'
+import LoginPage from './pages/LoginPage'
+
+function App() {
+  const { user, isReady } = useTelegram()
+
+  if (!isReady) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка приложения...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <LoginPage />
+  }
+
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/clubs" element={<ClubsPage />} />
+        <Route path="/clubs/:id" element={<ClubDetailPage />} />
+        <Route path="/events" element={<EventsPage />} />
+        <Route path="/events/:id" element={<EventDetailPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+      </Routes>
+    </Layout>
+  )
+}
+
+export default App 
