@@ -12,9 +12,6 @@ export interface User {
   bio?: string
   createdAt: Date
   updatedAt: Date
-  points: number
-  level: number
-  achievements: Achievement[]
   clubs: Club[]
   events: Event[]
   isTrainer: boolean
@@ -77,6 +74,15 @@ export interface Event {
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled'
   createdAt: Date
   updatedAt: Date
+  // Поля для тренировок
+  isTraining?: boolean
+  sportType?: string
+  distance?: number // в километрах
+  pace?: string // темп (например, "5:30/км")
+  duration?: number // в минутах
+  difficulty?: 'beginner' | 'intermediate' | 'advanced'
+  equipment?: string[]
+  notes?: string
 }
 
 // Организатор (может быть пользователь, клуб, тренер или компания)
@@ -106,18 +112,6 @@ export interface Trainer {
   reviewsCount: number
   hourlyRate?: number
   bio: string
-  achievements: Achievement[]
-}
-
-// Достижение
-export interface Achievement {
-  id: number
-  name: string
-  description: string
-  icon: string
-  points: number
-  unlockedAt?: Date
-  category: 'running' | 'social' | 'events' | 'clubs' | 'special'
 }
 
 // Чат сообщение
@@ -129,33 +123,6 @@ export interface ChatMessage {
   content: string
   type: 'text' | 'image' | 'file'
   attachments?: string[]
-  createdAt: Date
-  updatedAt: Date
-}
-
-// Рейтинг
-export interface Rating {
-  id: number
-  userId: number
-  user: User
-  clubId?: number
-  eventId?: number
-  score: number
-  category: 'running' | 'social' | 'events' | 'overall'
-  period: 'weekly' | 'monthly' | 'yearly' | 'all-time'
-  createdAt: Date
-}
-
-// Задание
-export interface Task {
-  id: number
-  clubId: number
-  title: string
-  description: string
-  points: number
-  deadline?: Date
-  isCompleted: boolean
-  completedBy: User[]
   createdAt: Date
   updatedAt: Date
 }
@@ -194,7 +161,7 @@ export interface Notification {
   userId: number
   title: string
   message: string
-  type: 'event' | 'club' | 'achievement' | 'payment' | 'system'
+  type: 'event' | 'club' | 'payment' | 'system'
   isRead: boolean
   data?: Record<string, any>
   createdAt: Date
@@ -210,6 +177,9 @@ export interface EventFilters {
   priceTo?: number
   tags?: string[]
   isFree?: boolean
+  isTraining?: boolean
+  sportType?: string
+  difficulty?: string
 }
 
 export interface ClubFilters {

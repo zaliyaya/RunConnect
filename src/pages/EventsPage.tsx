@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Search, Filter, Calendar, MapPin, DollarSign } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Search, Filter, Calendar, MapPin, DollarSign, Plus, Activity } from 'lucide-react'
 import { Event, EventFilters } from '../types'
 import EventCard from '../components/EventCard'
 
@@ -89,10 +90,83 @@ const mockEvents: Event[] = [
     status: 'upcoming',
     createdAt: new Date(),
     updatedAt: new Date()
+  },
+  {
+    id: 4,
+    title: 'Вечерняя пробежка 5км',
+    description: 'Легкая пробежка в парке. Подходит для начинающих.',
+    startDate: new Date('2024-02-20T19:00:00'),
+    endDate: new Date('2024-02-20T20:00:00'),
+    location: 'Парк Сокольники',
+    city: 'Москва',
+    address: 'ул. Сокольнический Вал, 1',
+    maxParticipants: 15,
+    currentParticipants: 8,
+    price: 0,
+    currency: 'RUB',
+    isFree: true,
+    registrationRequired: true,
+    organizer: {
+      id: 4,
+      type: 'user',
+      name: 'Алексей Петров',
+      avatar: 'https://via.placeholder.com/40'
+    },
+    participants: [],
+    tags: ['бег', 'вечер', 'начинающие'],
+    images: [],
+    status: 'upcoming',
+    isTraining: true,
+    sportType: 'Бег',
+    distance: 5,
+    pace: '6:00',
+    duration: 60,
+    difficulty: 'beginner',
+    equipment: ['Кроссовки', 'Вода'],
+    notes: 'Приносите с собой воду',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 5,
+    title: 'Интервальная тренировка',
+    description: 'Интенсивная тренировка с интервалами. Для подготовленных бегунов.',
+    startDate: new Date('2024-02-22T18:00:00'),
+    endDate: new Date('2024-02-22T19:30:00'),
+    location: 'Стадион Лужники',
+    city: 'Москва',
+    address: 'Лужнецкая наб., 24',
+    maxParticipants: 10,
+    currentParticipants: 5,
+    price: 0,
+    currency: 'RUB',
+    isFree: true,
+    registrationRequired: true,
+    organizer: {
+      id: 5,
+      type: 'user',
+      name: 'Мария Иванова',
+      avatar: 'https://via.placeholder.com/40'
+    },
+    participants: [],
+    tags: ['бег', 'интервалы', 'тренировка'],
+    images: [],
+    status: 'upcoming',
+    isTraining: true,
+    sportType: 'Бег',
+    distance: 8,
+    pace: '4:30',
+    duration: 90,
+    difficulty: 'advanced',
+    equipment: ['Кроссовки', 'Спортивные часы', 'Вода'],
+    notes: 'Разминка 15 минут, основная часть 60 минут, заминка 15 минут',
+    createdAt: new Date(),
+    updatedAt: new Date()
   }
 ]
 
 const EventsPage: React.FC = () => {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [filters, setFilters] = useState<EventFilters>({})
   const [showFilters, setShowFilters] = useState(false)
@@ -130,6 +204,21 @@ const EventsPage: React.FC = () => {
       return false
     }
 
+    // Фильтр по типу тренировки
+    if (filters.isTraining !== undefined && event.isTraining !== filters.isTraining) {
+      return false
+    }
+
+    // Фильтр по виду спорта
+    if (filters.sportType && event.sportType !== filters.sportType) {
+      return false
+    }
+
+    // Фильтр по сложности
+    if (filters.difficulty && event.difficulty !== filters.difficulty) {
+      return false
+    }
+
     // Фильтр по тегам
     if (filters.tags && filters.tags.length > 0) {
       const hasMatchingTag = filters.tags.some(tag => 
@@ -145,6 +234,7 @@ const EventsPage: React.FC = () => {
 
   const cities = Array.from(new Set(mockEvents.map(event => event.city)))
   const allTags = Array.from(new Set(mockEvents.flatMap(event => event.tags)))
+  const sportTypes = Array.from(new Set(mockEvents.filter(e => e.sportType).map(e => e.sportType!)))
 
   return (
     <div className="p-4 space-y-4">
@@ -152,6 +242,17 @@ const EventsPage: React.FC = () => {
       <div className="text-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">События</h1>
         <p className="text-gray-600">Найди интересные события и участвуй</p>
+      </div>
+
+      {/* Кнопка создания тренировки */}
+      <div className="flex justify-center">
+        <button
+          onClick={() => navigate('/create-training')}
+          className="flex items-center space-x-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+        >
+          <Plus className="w-5 h-5" />
+          <span>Создать тренировку</span>
+        </button>
       </div>
 
       {/* Поиск и фильтры */}
@@ -197,6 +298,90 @@ const EventsPage: React.FC = () => {
               </select>
             </div>
 
+            {/* Тип события */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Тип события
+              </label>
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={filters.isTraining === true}
+                    onChange={(e) => setFilters(prev => ({ 
+                      ...prev, 
+                      isTraining: e.target.checked ? true : undefined 
+                    }))}
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="text-sm text-gray-700 flex items-center">
+                    <Activity className="w-4 h-4 mr-1" />
+                    Тренировки
+                  </span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={filters.isFree === true}
+                    onChange={(e) => setFilters(prev => ({ 
+                      ...prev, 
+                      isFree: e.target.checked ? true : undefined 
+                    }))}
+                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  <span className="text-sm text-gray-700">Бесплатные</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={filters.isFree === false}
+                    onChange={(e) => setFilters(prev => ({ 
+                      ...prev, 
+                      isFree: e.target.checked ? false : undefined 
+                    }))}
+                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  <span className="text-sm text-gray-700">Платные</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Вид спорта (для тренировок) */}
+            {sportTypes.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Вид спорта
+                </label>
+                <select
+                  value={filters.sportType || ''}
+                  onChange={(e) => setFilters(prev => ({ ...prev, sportType: e.target.value || undefined }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  <option value="">Все виды спорта</option>
+                  {sportTypes.map(sport => (
+                    <option key={sport} value={sport}>{sport}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Сложность (для тренировок) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Сложность
+              </label>
+              <select
+                value={filters.difficulty || ''}
+                onChange={(e) => setFilters(prev => ({ ...prev, difficulty: e.target.value || undefined }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              >
+                <option value="">Любая сложность</option>
+                <option value="beginner">Начинающий</option>
+                <option value="intermediate">Средний</option>
+                <option value="advanced">Продвинутый</option>
+              </select>
+            </div>
+
             {/* Цена */}
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -228,39 +413,6 @@ const EventsPage: React.FC = () => {
                   }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
-              </div>
-            </div>
-
-            {/* Тип события */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Тип события
-              </label>
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={filters.isFree === true}
-                    onChange={(e) => setFilters(prev => ({ 
-                      ...prev, 
-                      isFree: e.target.checked ? true : undefined 
-                    }))}
-                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                  />
-                  <span className="text-sm text-gray-700">Бесплатные</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={filters.isFree === false}
-                    onChange={(e) => setFilters(prev => ({ 
-                      ...prev, 
-                      isFree: e.target.checked ? false : undefined 
-                    }))}
-                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                  />
-                  <span className="text-sm text-gray-700">Платные</span>
-                </label>
               </div>
             </div>
 

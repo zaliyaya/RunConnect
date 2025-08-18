@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Calendar, MapPin, Users, Clock, DollarSign } from 'lucide-react'
+import { Calendar, MapPin, Users, Clock, DollarSign, Activity, Target } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { Event } from '../types'
@@ -50,6 +50,32 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
     }
   }
 
+  const getDifficultyColor = (difficulty?: string) => {
+    switch (difficulty) {
+      case 'beginner':
+        return 'bg-green-100 text-green-800'
+      case 'intermediate':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'advanced':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getDifficultyText = (difficulty?: string) => {
+    switch (difficulty) {
+      case 'beginner':
+        return 'Начинающий'
+      case 'intermediate':
+        return 'Средний'
+      case 'advanced':
+        return 'Продвинутый'
+      default:
+        return 'Не указано'
+    }
+  }
+
   return (
     <div 
       className="card cursor-pointer hover:shadow-md transition-shadow"
@@ -68,9 +94,16 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
 
       {/* Статус события */}
       <div className="flex items-center justify-between mb-2">
-        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(event.status)}`}>
-          {getStatusText(event.status)}
-        </span>
+        <div className="flex items-center space-x-2">
+          <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(event.status)}`}>
+            {getStatusText(event.status)}
+          </span>
+          {event.isTraining && (
+            <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full">
+              Тренировка
+            </span>
+          )}
+        </div>
         
         {event.isFree ? (
           <span className="text-green-600 text-sm font-medium">Бесплатно</span>
@@ -90,6 +123,42 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
       <p className="text-sm text-gray-600 mb-3 line-clamp-2">
         {event.description}
       </p>
+
+      {/* Информация о тренировке */}
+      {event.isTraining && (
+        <div className="mb-3 p-3 bg-purple-50 rounded-lg">
+          <div className="flex items-center space-x-2 mb-2">
+            <Activity className="w-4 h-4 text-purple-600" />
+            <span className="text-sm font-medium text-purple-800">{event.sportType}</span>
+            {event.difficulty && (
+              <span className={`px-2 py-1 text-xs rounded-full ${getDifficultyColor(event.difficulty)}`}>
+                {getDifficultyText(event.difficulty)}
+              </span>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2 text-xs text-purple-700">
+            {event.distance && (
+              <div className="flex items-center space-x-1">
+                <Target className="w-3 h-3" />
+                <span>{event.distance} км</span>
+              </div>
+            )}
+            {event.pace && (
+              <div className="flex items-center space-x-1">
+                <Clock className="w-3 h-3" />
+                <span>{event.pace}/км</span>
+              </div>
+            )}
+            {event.duration && (
+              <div className="flex items-center space-x-1">
+                <Clock className="w-3 h-3" />
+                <span>{event.duration} мин</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Информация о событии */}
       <div className="space-y-2 text-sm text-gray-500">

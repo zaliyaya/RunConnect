@@ -4,11 +4,10 @@ import {
   Search, 
   Users, 
   Calendar, 
-  Trophy, 
   TrendingUp, 
-  Star,
   MapPin,
-  Clock
+  Clock,
+  Activity
 } from 'lucide-react'
 import { useTelegram } from '../hooks/useTelegram'
 import { Event, Club } from '../types'
@@ -73,6 +72,34 @@ const mockEvents: Event[] = [
     status: 'upcoming',
     createdAt: new Date(),
     updatedAt: new Date()
+  },
+  {
+    id: 3,
+    title: 'Тренировка по бегу в парке',
+    description: 'Ежедневная тренировка по бегу для начинающих и опытных бегунов.',
+    startDate: new Date('2024-02-20T07:00:00'),
+    endDate: new Date('2024-02-20T08:00:00'),
+    location: 'Парк Горького',
+    city: 'Москва',
+    address: 'ул. Крымский Вал, 9',
+    maxParticipants: 20,
+    currentParticipants: 15,
+    price: 0,
+    currency: 'RUB',
+    isFree: true,
+    registrationRequired: false,
+    organizer: {
+      id: 1,
+      type: 'club',
+      name: 'Беговой клуб "Стрела"',
+      avatar: 'https://via.placeholder.com/40'
+    },
+    participants: [],
+    tags: ['бег', 'тренировка', 'парк'],
+    images: ['https://via.placeholder.com/300x200'],
+    status: 'upcoming',
+    createdAt: new Date(),
+    updatedAt: new Date()
   }
 ]
 
@@ -94,9 +121,6 @@ const mockClubs: Club[] = [
       telegramId: 123456789,
       firstName: 'Алексей',
       lastName: 'Петров',
-      points: 1250,
-      level: 5,
-      achievements: [],
       clubs: [],
       events: [],
       isTrainer: false,
@@ -126,9 +150,6 @@ const mockClubs: Club[] = [
       telegramId: 987654321,
       firstName: 'Мария',
       lastName: 'Иванова',
-      points: 2100,
-      level: 8,
-      achievements: [],
       clubs: [],
       events: [],
       isTrainer: true,
@@ -159,7 +180,7 @@ const HomePage: React.FC = () => {
       {/* Приветствие */}
       <div className="text-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Добро пожаловать в RunConnect!
+          Добро пожаловать в YoungGo!
         </h1>
         <p className="text-gray-600">
           Найди свой беговой клуб и участвуй в событиях
@@ -180,7 +201,7 @@ const HomePage: React.FC = () => {
       </div>
 
       {/* Быстрые действия */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <button
           onClick={() => navigate('/clubs')}
           className="flex flex-col items-center p-4 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
@@ -195,6 +216,14 @@ const HomePage: React.FC = () => {
         >
           <Calendar className="w-8 h-8 text-secondary-600 mb-2" />
           <span className="text-sm font-medium text-secondary-700">События</span>
+        </button>
+
+        <button
+          onClick={() => navigate('/create-training')}
+          className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+        >
+          <Activity className="w-8 h-8 text-purple-600 mb-2" />
+          <span className="text-sm font-medium text-purple-700">Создать тренировку</span>
         </button>
       </div>
 
@@ -240,7 +269,7 @@ const HomePage: React.FC = () => {
       {user && (
         <div className="bg-white rounded-lg p-4 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-3">Ваша статистика</h3>
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-2 gap-4 text-center">
             <div>
               <div className="text-2xl font-bold text-primary-600">12</div>
               <div className="text-sm text-gray-600">Событий</div>
@@ -248,10 +277,6 @@ const HomePage: React.FC = () => {
             <div>
               <div className="text-2xl font-bold text-secondary-600">3</div>
               <div className="text-sm text-gray-600">Клуба</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-yellow-600">850</div>
-              <div className="text-sm text-gray-600">Очков</div>
             </div>
           </div>
         </div>

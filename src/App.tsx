@@ -9,6 +9,7 @@ import ProfilePage from './pages/ProfilePage'
 import ClubDetailPage from './pages/ClubDetailPage'
 import EventDetailPage from './pages/EventDetailPage'
 import LoginPage from './pages/LoginPage'
+import CreateTrainingPage from './pages/CreateTrainingPage'
 
 function App() {
   const { user, isReady } = useTelegram()
@@ -36,6 +37,7 @@ function App() {
         <Route path="/clubs/:id" element={<ClubDetailPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/events/:id" element={<EventDetailPage />} />
+        <Route path="/create-training" element={<CreateTrainingPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </Layout>

@@ -1,5 +1,5 @@
 {
-  "name": "runconnect",
+  "name": "younggo",
   "version": "1.0.0",
   "type": "module",
   "description": "Telegram Mini App for running communities and events",
@@ -39,6 +39,6 @@
     "events",
     "clubs"
   ],
-  "author": "RunConnect Team",
+      "author": "YoungGo Team",
   "license": "MIT"
 }
