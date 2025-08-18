@@ -12,10 +12,12 @@ import {
 } from 'lucide-react'
 import { useTelegram } from '../hooks/useTelegram'
 import { Event } from '../types'
+import { useEvents } from '../hooks/useEvents'
 
 const CreateTrainingPage: React.FC = () => {
   const navigate = useNavigate()
   const { user } = useTelegram()
+  const { addEvent } = useEvents()
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   const [formData, setFormData] = useState({
@@ -83,15 +85,19 @@ const CreateTrainingPage: React.FC = () => {
     setIsSubmitting(true)
 
     try {
-      // Создаем объект тренировки
-      const training: Partial<Event> = {
+      const id = Date.now()
+      const start = new Date(`${formData.startDate}T${formData.startTime}`)
+      const end = new Date(`${formData.startDate}T${formData.endTime}`)
+
+      const training: Event = {
+        id,
         title: formData.title,
         description: formData.description,
-        startDate: new Date(`${formData.startDate}T${formData.startTime}`),
-        endDate: new Date(`${formData.startDate}T${formData.endTime}`),
+        startDate: start,
+        endDate: end,
         location: formData.location,
         city: formData.city,
-        address: formData.address,
+        address: formData.address || undefined,
         maxParticipants: formData.maxParticipants ? parseInt(formData.maxParticipants) : undefined,
         currentParticipants: 0,
         price: 0,
@@ -99,15 +105,17 @@ const CreateTrainingPage: React.FC = () => {
         isFree: true,
         registrationRequired: true,
         organizer: {
-          id: user.id || 0,
+          id: user.id,
           type: 'user',
-          name: `${user.first_name} ${user.last_name || ''}`,
+          name: `${user.first_name}${user.last_name ? ' ' + user.last_name : ''}`,
           avatar: user.photo_url
         },
         participants: [],
-        tags: [formData.sportType],
+        tags: formData.sportType ? [formData.sportType] : [],
         images: [],
-        status: 'upcoming',
+        status: start > new Date() ? 'upcoming' : 'ongoing',
+        createdAt: new Date(),
+        updatedAt: new Date(),
         isTraining: true,
         sportType: formData.sportType,
         distance: formData.distance ? parseFloat(formData.distance) : undefined,
@@ -115,16 +123,14 @@ const CreateTrainingPage: React.FC = () => {
         duration: formData.duration ? parseInt(formData.duration) : undefined,
         difficulty: formData.difficulty,
         equipment: formData.equipment,
-        notes: formData.notes
+        notes: formData.notes || undefined
       }
 
-      // Здесь будет API вызов для сохранения тренировки
-      console.log('Создаваемая тренировка:', training)
+      addEvent(training)
       
       // Имитация API вызова
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 300))
       
-      // Перенаправляем на страницу событий
       navigate('/events')
     } catch (error) {
       console.error('Ошибка при создании тренировки:', error)

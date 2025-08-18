@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { 
   Calendar, 
@@ -9,7 +9,7 @@ import {
   ArrowLeft,
   Activity,
   Target,
-  User,
+  User as UserIcon,
   CheckCircle,
   XCircle,
   Edit,
@@ -18,100 +18,18 @@ import {
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { useTelegram } from '../hooks/useTelegram'
-import { Event } from '../types'
-
-// Моковые данные (в реальном приложении это будет API)
-const mockEvents: Event[] = [
-  {
-    id: 1,
-    title: 'Утренняя пробежка в парке Горького',
-    description: 'Присоединяйтесь к нашей утренней пробежке! Подходит для всех уровней подготовки.',
-    startDate: new Date('2024-02-15T08:00:00'),
-    endDate: new Date('2024-02-15T09:30:00'),
-    location: 'Парк Горького',
-    city: 'Москва',
-    address: 'ул. Крымский Вал, 9',
-    maxParticipants: 50,
-    currentParticipants: 23,
-    price: 0,
-    currency: 'RUB',
-    isFree: true,
-    registrationRequired: true,
-    organizer: {
-      id: 1,
-      type: 'club',
-      name: 'Беговой клуб "Стрела"',
-      avatar: 'https://via.placeholder.com/40'
-    },
-    participants: [],
-    tags: ['бег', 'утро', 'парк'],
-    images: ['https://via.placeholder.com/300x200'],
-    status: 'upcoming',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 4,
-    title: 'Вечерняя пробежка 5км',
-    description: 'Легкая пробежка в парке. Подходит для начинающих.',
-    startDate: new Date('2024-02-20T19:00:00'),
-    endDate: new Date('2024-02-20T20:00:00'),
-    location: 'Парк Сокольники',
-    city: 'Москва',
-    address: 'ул. Сокольнический Вал, 1',
-    maxParticipants: 15,
-    currentParticipants: 8,
-    price: 0,
-    currency: 'RUB',
-    isFree: true,
-    registrationRequired: true,
-    organizer: {
-      id: 4,
-      type: 'user',
-      name: 'Алексей Петров',
-      avatar: 'https://via.placeholder.com/40'
-    },
-    participants: [],
-    tags: ['бег', 'вечер', 'начинающие'],
-    images: [],
-    status: 'upcoming',
-    isTraining: true,
-    sportType: 'Бег',
-    distance: 5,
-    pace: '6:00',
-    duration: 60,
-    difficulty: 'beginner',
-    equipment: ['Кроссовки', 'Вода'],
-    notes: 'Приносите с собой воду',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-]
+import { useEvents } from '../hooks/useEvents'
+import { Event, User } from '../types'
 
 const EventDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useTelegram()
-  const [event, setEvent] = useState<Event | null>(null)
-  const [isJoined, setIsJoined] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const { getEventById, joinEvent, leaveEvent } = useEvents()
 
-  useEffect(() => {
-    if (id) {
-      const foundEvent = mockEvents.find(e => e.id === parseInt(id))
-      setEvent(foundEvent || null)
-      
-      // Проверяем, присоединился ли пользователь к событию
-      if (foundEvent && user) {
-        const isUserJoined = foundEvent.participants.some(p => p.telegramId === user.id)
-        setIsJoined(isUserJoined)
-      }
-    }
-  }, [id, user])
+  const event: Event | undefined = id ? getEventById(parseInt(id)) : undefined
 
-  const formatDate = (date: Date) => {
-    return format(new Date(date), 'dd MMMM yyyy, HH:mm', { locale: ru })
-  }
+  const formatDate = (date: Date) => format(new Date(date), 'dd MMMM yyyy, HH:mm', { locale: ru })
 
   const getDifficultyColor = (difficulty?: string) => {
     switch (difficulty) {
@@ -169,54 +87,6 @@ const EventDetailPage: React.FC = () => {
     }
   }
 
-  const handleJoinEvent = async () => {
-    if (!event || !user) return
-
-    setIsLoading(true)
-    try {
-      // Здесь будет API вызов для присоединения к событию
-      console.log('Присоединение к событию:', event.id)
-      
-      // Имитация API вызова
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      setIsJoined(true)
-      setEvent(prev => prev ? {
-        ...prev,
-        currentParticipants: prev.currentParticipants + 1
-      } : null)
-    } catch (error) {
-      console.error('Ошибка при присоединении к событию:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleLeaveEvent = async () => {
-    if (!event || !user) return
-
-    setIsLoading(true)
-    try {
-      // Здесь будет API вызов для отмены участия
-      console.log('Отмена участия в событии:', event.id)
-      
-      // Имитация API вызова
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      setIsJoined(false)
-      setEvent(prev => prev ? {
-        ...prev,
-        currentParticipants: Math.max(0, prev.currentParticipants - 1)
-      } : null)
-    } catch (error) {
-      console.error('Ошибка при отмене участия:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const isOrganizer = event?.organizer.id === user?.id
-
   if (!event) {
     return (
       <div className="p-4 text-center">
@@ -225,46 +95,65 @@ const EventDetailPage: React.FC = () => {
     )
   }
 
+  const isOrganizer = user && event.organizer.type === 'user' && event.organizer.id === user.id
+  const isJoined = !!user && event.participants.some(p => p.telegramId === user.id)
+
+  const handleJoin = async () => {
+    if (!user) return
+    const participant: User = {
+      id: user.id,
+      telegramId: user.id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      username: user.username,
+      email: undefined,
+      phone: undefined,
+      avatar: user.photo_url,
+      city: undefined,
+      bio: undefined,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      clubs: [],
+      events: [],
+      isTrainer: false,
+      isOrganizer: false,
+    }
+    joinEvent(event.id, participant)
+  }
+
+  const handleLeave = async () => {
+    if (!user) return
+    leaveEvent(event.id, user.id)
+  }
+
   return (
     <div className="p-4 space-y-6">
-      {/* Заголовок */}
+      {/* Header */}
       <div className="flex items-center space-x-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-        >
+        <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
           <ArrowLeft className="w-5 h-5 text-gray-600" />
         </button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900">{event.title}</h1>
           <div className="flex items-center space-x-2 mt-1">
-            <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(event.status)}`}>
-              {getStatusText(event.status)}
-            </span>
+            <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(event.status)}`}>{getStatusText(event.status)}</span>
             {event.isTraining && (
-              <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full">
-                Тренировка
-              </span>
+              <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full">Тренировка</span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Изображение */}
+      {/* Image */}
       {event.images.length > 0 && (
         <div className="aspect-video rounded-lg overflow-hidden">
-          <img 
-            src={event.images[0]} 
-            alt={event.title}
-            className="w-full h-full object-cover"
-          />
+          <img src={event.images[0]} alt={event.title} className="w-full h-full object-cover" />
         </div>
       )}
 
-      {/* Основная информация */}
+      {/* Main info */}
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Информация о событии</h2>
-        
         <div className="space-y-4">
           <div className="flex items-center space-x-3">
             <Calendar className="w-5 h-5 text-gray-500" />
@@ -273,49 +162,38 @@ const EventDetailPage: React.FC = () => {
               <p className="font-medium">{formatDate(event.startDate)}</p>
             </div>
           </div>
-
           <div className="flex items-center space-x-3">
             <MapPin className="w-5 h-5 text-gray-500" />
             <div>
               <p className="text-sm text-gray-600">Место проведения</p>
               <p className="font-medium">{event.location}</p>
-              {event.address && (
-                <p className="text-sm text-gray-500">{event.address}</p>
-              )}
+              {event.address && <p className="text-sm text-gray-500">{event.address}</p>}
             </div>
           </div>
-
           <div className="flex items-center space-x-3">
             <Users className="w-5 h-5 text-gray-500" />
             <div>
               <p className="text-sm text-gray-600">Участники</p>
-              <p className="font-medium">
-                {event.currentParticipants}
-                {event.maxParticipants && ` / ${event.maxParticipants}`}
-              </p>
+              <p className="font-medium">{event.currentParticipants}{event.maxParticipants && ` / ${event.maxParticipants}`}</p>
             </div>
           </div>
-
           <div className="flex items-center space-x-3">
             <DollarSign className="w-5 h-5 text-gray-500" />
             <div>
               <p className="text-sm text-gray-600">Стоимость</p>
-              <p className="font-medium">
-                {event.isFree ? 'Бесплатно' : `${event.price} ${event.currency}`}
-              </p>
+              <p className="font-medium">{event.isFree ? 'Бесплатно' : `${event.price} ${event.currency}`}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Информация о тренировке */}
+      {/* Training section */}
       {event.isTraining && (
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <Activity className="w-5 h-5 mr-2" />
             Параметры тренировки
           </h2>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center space-x-3">
               <Activity className="w-5 h-5 text-purple-500" />
@@ -324,19 +202,15 @@ const EventDetailPage: React.FC = () => {
                 <p className="font-medium">{event.sportType}</p>
               </div>
             </div>
-
             {event.difficulty && (
               <div className="flex items-center space-x-3">
                 <Target className="w-5 h-5 text-purple-500" />
                 <div>
                   <p className="text-sm text-gray-600">Сложность</p>
-                  <span className={`px-2 py-1 text-xs rounded-full ${getDifficultyColor(event.difficulty)}`}>
-                    {getDifficultyText(event.difficulty)}
-                  </span>
+                  <span className={`px-2 py-1 text-xs rounded-full ${getDifficultyColor(event.difficulty)}`}>{getDifficultyText(event.difficulty)}</span>
                 </div>
               </div>
             )}
-
             {event.distance && (
               <div className="flex items-center space-x-3">
                 <Target className="w-5 h-5 text-purple-500" />
@@ -346,7 +220,6 @@ const EventDetailPage: React.FC = () => {
                 </div>
               </div>
             )}
-
             {event.pace && (
               <div className="flex items-center space-x-3">
                 <Clock className="w-5 h-5 text-purple-500" />
@@ -356,7 +229,6 @@ const EventDetailPage: React.FC = () => {
                 </div>
               </div>
             )}
-
             {event.duration && (
               <div className="flex items-center space-x-3">
                 <Clock className="w-5 h-5 text-purple-500" />
@@ -367,51 +239,34 @@ const EventDetailPage: React.FC = () => {
               </div>
             )}
           </div>
-
           {event.equipment && event.equipment.length > 0 && (
             <div className="mt-4">
               <p className="text-sm font-medium text-gray-700 mb-2">Необходимое снаряжение:</p>
               <div className="flex flex-wrap gap-2">
                 {event.equipment.map((item, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-full"
-                  >
-                    {item}
-                  </span>
+                  <span key={index} className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-full">{item}</span>
                 ))}
               </div>
-            </div>
-          )}
-
-          {event.notes && (
-            <div className="mt-4 p-3 bg-purple-50 rounded-lg">
-              <p className="text-sm font-medium text-purple-800 mb-1">Дополнительные заметки:</p>
-              <p className="text-sm text-purple-700">{event.notes}</p>
             </div>
           )}
         </div>
       )}
 
-      {/* Описание */}
+      {/* Description */}
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Описание</h2>
         <p className="text-gray-700 leading-relaxed">{event.description}</p>
       </div>
 
-      {/* Организатор */}
+      {/* Organizer */}
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Организатор</h2>
         <div className="flex items-center space-x-3">
           {event.organizer.avatar ? (
-            <img 
-              src={event.organizer.avatar} 
-              alt={event.organizer.name}
-              className="w-12 h-12 rounded-full"
-            />
+            <img src={event.organizer.avatar} alt={event.organizer.name} className="w-12 h-12 rounded-full" />
           ) : (
             <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-              <User className="w-6 h-6 text-gray-500" />
+              <UserIcon className="w-6 h-6 text-gray-500" />
             </div>
           )}
           <div>
@@ -421,24 +276,7 @@ const EventDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Теги */}
-      {event.tags.length > 0 && (
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Категории</h2>
-          <div className="flex flex-wrap gap-2">
-            {event.tags.map((tag) => (
-              <span
-                key={tag}
-                className="px-3 py-1 text-sm bg-primary-100 text-primary-700 rounded-full"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Кнопки действий */}
+      {/* Actions */}
       <div className="space-y-4">
         {isOrganizer ? (
           <div className="flex space-x-4">
@@ -454,40 +292,14 @@ const EventDetailPage: React.FC = () => {
         ) : (
           <div className="flex space-x-4">
             {isJoined ? (
-              <button
-                onClick={handleLeaveEvent}
-                disabled={isLoading}
-                className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Отмена...</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="w-5 h-5" />
-                    <span>Отменить участие</span>
-                  </>
-                )}
+              <button onClick={handleLeave} className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                <XCircle className="w-5 h-5" />
+                <span>Отменить участие</span>
               </button>
             ) : (
-              <button
-                onClick={handleJoinEvent}
-                disabled={isLoading || (event.maxParticipants ? event.currentParticipants >= event.maxParticipants : false)}
-                className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Присоединение...</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-5 h-5" />
-                    <span>Присоединиться</span>
-                  </>
-                )}
+              <button onClick={handleJoin} className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors" disabled={!!event.maxParticipants && event.currentParticipants >= event.maxParticipants}>
+                <CheckCircle className="w-5 h-5" />
+                <span>Присоединиться</span>
               </button>
             )}
           </div>

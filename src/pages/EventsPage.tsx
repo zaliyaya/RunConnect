@@ -1,250 +1,78 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Filter, Calendar, MapPin, DollarSign, Plus, Activity } from 'lucide-react'
-import { Event, EventFilters } from '../types'
+import { Search, Filter, Calendar, Plus, Activity } from 'lucide-react'
+import { EventFilters } from '../types'
 import EventCard from '../components/EventCard'
-
-// Моковые данные
-const mockEvents: Event[] = [
-  {
-    id: 1,
-    title: 'Утренняя пробежка в парке Горького',
-    description: 'Присоединяйтесь к нашей утренней пробежке! Подходит для всех уровней подготовки.',
-    startDate: new Date('2024-02-15T08:00:00'),
-    endDate: new Date('2024-02-15T09:30:00'),
-    location: 'Парк Горького',
-    city: 'Москва',
-    address: 'ул. Крымский Вал, 9',
-    maxParticipants: 50,
-    currentParticipants: 23,
-    price: 0,
-    currency: 'RUB',
-    isFree: true,
-    registrationRequired: true,
-    organizer: {
-      id: 1,
-      type: 'club',
-      name: 'Беговой клуб "Стрела"',
-      avatar: 'https://via.placeholder.com/40'
-    },
-    participants: [],
-    tags: ['бег', 'утро', 'парк'],
-    images: ['https://via.placeholder.com/300x200'],
-    status: 'upcoming',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 2,
-    title: 'Полумарафон "Весенний ветер"',
-    description: 'Ежегодный полумарафон с живописной трассой по центру города.',
-    startDate: new Date('2024-03-20T09:00:00'),
-    endDate: new Date('2024-03-20T12:00:00'),
-    location: 'Центральная площадь',
-    city: 'Москва',
-    address: 'Красная площадь',
-    maxParticipants: 1000,
-    currentParticipants: 567,
-    price: 2500,
-    currency: 'RUB',
-    isFree: false,
-    registrationRequired: true,
-    registrationDeadline: new Date('2024-03-15T23:59:59'),
-    organizer: {
-      id: 2,
-      type: 'company',
-      name: 'Организаторы марафонов',
-      avatar: 'https://via.placeholder.com/40'
-    },
-    participants: [],
-    tags: ['марафон', 'соревнования', 'весна'],
-    images: ['https://via.placeholder.com/300x200'],
-    status: 'upcoming',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 3,
-    title: 'Трейлраннинг в Подмосковье',
-    description: 'Бег по лесным тропам и холмам. Дистанции 5, 10 и 21 км.',
-    startDate: new Date('2024-04-10T07:00:00'),
-    endDate: new Date('2024-04-10T14:00:00'),
-    location: 'Лесной массив',
-    city: 'Подмосковье',
-    address: 'Истринский район',
-    maxParticipants: 200,
-    currentParticipants: 89,
-    price: 1500,
-    currency: 'RUB',
-    isFree: false,
-    registrationRequired: true,
-    organizer: {
-      id: 3,
-      type: 'club',
-      name: 'Клуб трейлраннинга',
-      avatar: 'https://via.placeholder.com/40'
-    },
-    participants: [],
-    tags: ['трейлраннинг', 'природа', 'лес'],
-    images: ['https://via.placeholder.com/300x200'],
-    status: 'upcoming',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 4,
-    title: 'Вечерняя пробежка 5км',
-    description: 'Легкая пробежка в парке. Подходит для начинающих.',
-    startDate: new Date('2024-02-20T19:00:00'),
-    endDate: new Date('2024-02-20T20:00:00'),
-    location: 'Парк Сокольники',
-    city: 'Москва',
-    address: 'ул. Сокольнический Вал, 1',
-    maxParticipants: 15,
-    currentParticipants: 8,
-    price: 0,
-    currency: 'RUB',
-    isFree: true,
-    registrationRequired: true,
-    organizer: {
-      id: 4,
-      type: 'user',
-      name: 'Алексей Петров',
-      avatar: 'https://via.placeholder.com/40'
-    },
-    participants: [],
-    tags: ['бег', 'вечер', 'начинающие'],
-    images: [],
-    status: 'upcoming',
-    isTraining: true,
-    sportType: 'Бег',
-    distance: 5,
-    pace: '6:00',
-    duration: 60,
-    difficulty: 'beginner',
-    equipment: ['Кроссовки', 'Вода'],
-    notes: 'Приносите с собой воду',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 5,
-    title: 'Интервальная тренировка',
-    description: 'Интенсивная тренировка с интервалами. Для подготовленных бегунов.',
-    startDate: new Date('2024-02-22T18:00:00'),
-    endDate: new Date('2024-02-22T19:30:00'),
-    location: 'Стадион Лужники',
-    city: 'Москва',
-    address: 'Лужнецкая наб., 24',
-    maxParticipants: 10,
-    currentParticipants: 5,
-    price: 0,
-    currency: 'RUB',
-    isFree: true,
-    registrationRequired: true,
-    organizer: {
-      id: 5,
-      type: 'user',
-      name: 'Мария Иванова',
-      avatar: 'https://via.placeholder.com/40'
-    },
-    participants: [],
-    tags: ['бег', 'интервалы', 'тренировка'],
-    images: [],
-    status: 'upcoming',
-    isTraining: true,
-    sportType: 'Бег',
-    distance: 8,
-    pace: '4:30',
-    duration: 90,
-    difficulty: 'advanced',
-    equipment: ['Кроссовки', 'Спортивные часы', 'Вода'],
-    notes: 'Разминка 15 минут, основная часть 60 минут, заминка 15 минут',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-]
+import { useEvents } from '../hooks/useEvents'
 
 const EventsPage: React.FC = () => {
   const navigate = useNavigate()
+  const { events } = useEvents()
   const [searchQuery, setSearchQuery] = useState('')
   const [filters, setFilters] = useState<EventFilters>({})
   const [showFilters, setShowFilters] = useState(false)
+  const [showPast, setShowPast] = useState<boolean>(false)
 
-  const filteredEvents = mockEvents.filter(event => {
-    // Поиск по названию и описанию
+  const now = new Date()
+
+  const filteredEvents = events.filter(event => {
+    // Hide/show past events
+    const isPast = new Date(event.startDate) < now
+    if (showPast ? !isPast : isPast) return false
+
+    // Search by title/description
     if (searchQuery && !event.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
         !event.description.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false
     }
 
-    // Фильтр по городу
-    if (filters.city && event.city !== filters.city) {
-      return false
-    }
+    // City
+    if (filters.city && event.city !== filters.city) return false
 
-    // Фильтр по дате
-    if (filters.dateFrom && new Date(event.startDate) < filters.dateFrom) {
-      return false
-    }
-    if (filters.dateTo && new Date(event.startDate) > filters.dateTo) {
-      return false
-    }
+    // Date range
+    if (filters.dateFrom && new Date(event.startDate) < filters.dateFrom) return false
+    if (filters.dateTo && new Date(event.startDate) > filters.dateTo) return false
 
-    // Фильтр по цене
-    if (filters.priceFrom && event.price < filters.priceFrom) {
-      return false
-    }
-    if (filters.priceTo && event.price > filters.priceTo) {
-      return false
-    }
+    // Price
+    if (filters.priceFrom && event.price < filters.priceFrom) return false
+    if (filters.priceTo && event.price > filters.priceTo) return false
 
-    // Фильтр по бесплатности
-    if (filters.isFree !== undefined && event.isFree !== filters.isFree) {
-      return false
-    }
+    // Free
+    if (filters.isFree !== undefined && event.isFree !== filters.isFree) return false
 
-    // Фильтр по типу тренировки
-    if (filters.isTraining !== undefined && event.isTraining !== filters.isTraining) {
-      return false
-    }
+    // Training type
+    if (filters.isTraining !== undefined && event.isTraining !== filters.isTraining) return false
 
-    // Фильтр по виду спорта
-    if (filters.sportType && event.sportType !== filters.sportType) {
-      return false
-    }
+    // Sport type
+    if (filters.sportType && event.sportType !== filters.sportType) return false
 
-    // Фильтр по сложности
-    if (filters.difficulty && event.difficulty !== filters.difficulty) {
-      return false
-    }
+    // Difficulty
+    if (filters.difficulty && event.difficulty !== filters.difficulty) return false
 
-    // Фильтр по тегам
+    // Tags
     if (filters.tags && filters.tags.length > 0) {
       const hasMatchingTag = filters.tags.some(tag => 
         event.tags.some(eventTag => eventTag.toLowerCase().includes(tag.toLowerCase()))
       )
-      if (!hasMatchingTag) {
-        return false
-      }
+      if (!hasMatchingTag) return false
     }
 
     return true
   })
 
-  const cities = Array.from(new Set(mockEvents.map(event => event.city)))
-  const allTags = Array.from(new Set(mockEvents.flatMap(event => event.tags)))
-  const sportTypes = Array.from(new Set(mockEvents.filter(e => e.sportType).map(e => e.sportType!)))
+  const cities = Array.from(new Set(events.map(event => event.city)))
+  const allTags = Array.from(new Set(events.flatMap(event => event.tags)))
+  const sportTypes = Array.from(new Set(events.filter(e => e.sportType).map(e => e.sportType!)))
 
   return (
     <div className="p-4 space-y-4">
-      {/* Заголовок */}
+      {/* Header */}
       <div className="text-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">События</h1>
         <p className="text-gray-600">Найди интересные события и участвуй</p>
       </div>
 
-      {/* Кнопка создания тренировки */}
+      {/* Create training button */}
       <div className="flex justify-center">
         <button
           onClick={() => navigate('/create-training')}
@@ -255,9 +83,9 @@ const EventsPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Поиск и фильтры */}
+      {/* Search and filters */}
       <div className="space-y-4">
-        {/* Поиск */}
+        {/* Search */}
         <div className="relative">
           <input
             type="text"
@@ -269,7 +97,7 @@ const EventsPage: React.FC = () => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
         </div>
 
-        {/* Кнопка фильтров */}
+        {/* Filters toggle */}
         <button
           onClick={() => setShowFilters(!showFilters)}
           className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -278,10 +106,21 @@ const EventsPage: React.FC = () => {
           <span>Фильтры</span>
         </button>
 
-        {/* Панель фильтров */}
+        {/* Filters panel */}
         {showFilters && (
           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 space-y-4">
-            {/* Город */}
+            {/* Past events */}
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={showPast}
+                onChange={(e) => setShowPast(e.target.checked)}
+                className="rounded border-gray-300 text-gray-600 focus:ring-gray-500"
+              />
+              <span className="text-sm text-gray-700">Прошедшие события</span>
+            </label>
+
+            {/* City */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Город
@@ -298,7 +137,7 @@ const EventsPage: React.FC = () => {
               </select>
             </div>
 
-            {/* Тип события */}
+            {/* Type */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Тип события
@@ -346,7 +185,7 @@ const EventsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Вид спорта (для тренировок) */}
+            {/* Sport type */}
             {sportTypes.length > 0 && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -365,7 +204,7 @@ const EventsPage: React.FC = () => {
               </div>
             )}
 
-            {/* Сложность (для тренировок) */}
+            {/* Difficulty */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Сложность
@@ -382,41 +221,7 @@ const EventsPage: React.FC = () => {
               </select>
             </div>
 
-            {/* Цена */}
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Цена от
-                </label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={filters.priceFrom || ''}
-                  onChange={(e) => setFilters(prev => ({ 
-                    ...prev, 
-                    priceFrom: e.target.value ? Number(e.target.value) : undefined 
-                  }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Цена до
-                </label>
-                <input
-                  type="number"
-                  placeholder="∞"
-                  value={filters.priceTo || ''}
-                  onChange={(e) => setFilters(prev => ({ 
-                    ...prev, 
-                    priceTo: e.target.value ? Number(e.target.value) : undefined 
-                  }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            {/* Теги */}
+            {/* Tags */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Категории
@@ -444,9 +249,9 @@ const EventsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Сброс фильтров */}
+            {/* Reset */}
             <button
-              onClick={() => setFilters({})}
+              onClick={() => { setFilters({}); setShowPast(false) }}
               className="w-full px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Сбросить фильтры
@@ -455,7 +260,7 @@ const EventsPage: React.FC = () => {
         )}
       </div>
 
-      {/* Результаты */}
+      {/* Results */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">

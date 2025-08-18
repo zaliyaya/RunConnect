@@ -13,96 +13,9 @@ import { useTelegram } from '../hooks/useTelegram'
 import { Event, Club } from '../types'
 import EventCard from '../components/EventCard'
 import ClubCard from '../components/ClubCard'
+import { useEvents } from '../hooks/useEvents'
 
-// Моковые данные для демонстрации
-const mockEvents: Event[] = [
-  {
-    id: 1,
-    title: 'Утренняя пробежка в парке Горького',
-    description: 'Присоединяйтесь к нашей утренней пробежке! Подходит для всех уровней подготовки.',
-    startDate: new Date('2024-02-15T08:00:00'),
-    endDate: new Date('2024-02-15T09:30:00'),
-    location: 'Парк Горького',
-    city: 'Москва',
-    address: 'ул. Крымский Вал, 9',
-    maxParticipants: 50,
-    currentParticipants: 23,
-    price: 0,
-    currency: 'RUB',
-    isFree: true,
-    registrationRequired: true,
-    organizer: {
-      id: 1,
-      type: 'club',
-      name: 'Беговой клуб "Стрела"',
-      avatar: 'https://via.placeholder.com/40'
-    },
-    participants: [],
-    tags: ['бег', 'утро', 'парк'],
-    images: ['https://via.placeholder.com/300x200'],
-    status: 'upcoming',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 2,
-    title: 'Полумарафон "Весенний ветер"',
-    description: 'Ежегодный полумарафон с живописной трассой по центру города.',
-    startDate: new Date('2024-03-20T09:00:00'),
-    endDate: new Date('2024-03-20T12:00:00'),
-    location: 'Центральная площадь',
-    city: 'Москва',
-    address: 'Красная площадь',
-    maxParticipants: 1000,
-    currentParticipants: 567,
-    price: 2500,
-    currency: 'RUB',
-    isFree: false,
-    registrationRequired: true,
-    registrationDeadline: new Date('2024-03-15T23:59:59'),
-    organizer: {
-      id: 2,
-      type: 'company',
-      name: 'Организаторы марафонов',
-      avatar: 'https://via.placeholder.com/40'
-    },
-    participants: [],
-    tags: ['марафон', 'соревнования', 'весна'],
-    images: ['https://via.placeholder.com/300x200'],
-    status: 'upcoming',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 3,
-    title: 'Тренировка по бегу в парке',
-    description: 'Ежедневная тренировка по бегу для начинающих и опытных бегунов.',
-    startDate: new Date('2024-02-20T07:00:00'),
-    endDate: new Date('2024-02-20T08:00:00'),
-    location: 'Парк Горького',
-    city: 'Москва',
-    address: 'ул. Крымский Вал, 9',
-    maxParticipants: 20,
-    currentParticipants: 15,
-    price: 0,
-    currency: 'RUB',
-    isFree: true,
-    registrationRequired: false,
-    organizer: {
-      id: 1,
-      type: 'club',
-      name: 'Беговой клуб "Стрела"',
-      avatar: 'https://via.placeholder.com/40'
-    },
-    participants: [],
-    tags: ['бег', 'тренировка', 'парк'],
-    images: ['https://via.placeholder.com/300x200'],
-    status: 'upcoming',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-]
-
+// Моковые данные для демонстрации клубов
 const mockClubs: Club[] = [
   {
     id: 1,
@@ -130,7 +43,7 @@ const mockClubs: Club[] = [
     },
     members: [],
     moderators: [],
-    events: mockEvents.filter(e => e.organizer.id === 1),
+    events: [],
     tags: ['бег', 'тренировки', 'соревнования']
   },
   {
@@ -167,6 +80,7 @@ const mockClubs: Club[] = [
 const HomePage: React.FC = () => {
   const navigate = useNavigate()
   const { user } = useTelegram()
+  const { events } = useEvents()
   const [searchQuery, setSearchQuery] = useState('')
 
   const handleSearch = () => {
@@ -174,6 +88,11 @@ const HomePage: React.FC = () => {
       navigate(`/events?search=${encodeURIComponent(searchQuery)}`)
     }
   }
+
+  const upcoming = events
+    .filter(e => new Date(e.startDate) >= new Date())
+    .sort((a, b) => +new Date(a.startDate) - +new Date(b.startDate))
+    .slice(0, 5)
 
   return (
     <div className="p-4 space-y-6">
@@ -240,7 +159,7 @@ const HomePage: React.FC = () => {
         </div>
         
         <div className="space-y-4">
-          {mockEvents.map((event) => (
+          {upcoming.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}
         </div>
@@ -271,12 +190,12 @@ const HomePage: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-3">Ваша статистика</h3>
           <div className="grid grid-cols-2 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-primary-600">12</div>
-              <div className="text-sm text-gray-600">Событий</div>
+              <div className="text-2xl font-bold text-primary-600">{events.filter(e => e.isTraining).length}</div>
+              <div className="text-sm text-gray-600">Тренировок</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-secondary-600">3</div>
-              <div className="text-sm text-gray-600">Клуба</div>
+              <div className="text-2xl font-bold text-secondary-600">{events.length}</div>
+              <div className="text-sm text-gray-600">Всего событий</div>
             </div>
           </div>
         </div>
