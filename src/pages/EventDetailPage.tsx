@@ -280,7 +280,11 @@ const EventDetailPage: React.FC = () => {
       <div className="space-y-4">
         {isOrganizer ? (
           <div className="flex space-x-4">
-            <button className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <button
+              disabled={event.currentParticipants > 0}
+              onClick={() => navigate(`/events/${event.id}/edit`)}
+              className={`flex-1 flex items-center justify-center space-x-2 px-6 py-3 rounded-lg transition-colors ${event.currentParticipants > 0 ? 'bg-gray-300 text-white cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+            >
               <Edit className="w-5 h-5" />
               <span>Редактировать</span>
             </button>

@@ -5,7 +5,6 @@ import {
   Clock, 
   MapPin, 
   Users, 
-  Target, 
   Activity,
   ArrowLeft,
   Save
@@ -28,14 +27,12 @@ const CreateTrainingPage: React.FC = () => {
     endTime: '',
     location: '',
     city: '',
-    address: '',
     maxParticipants: '',
     sportType: '',
     distance: '',
     pace: '',
     duration: '',
     difficulty: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
-    equipment: [] as string[],
     notes: ''
   })
 
@@ -51,30 +48,10 @@ const CreateTrainingPage: React.FC = () => {
     'Другое'
   ]
 
-  const equipmentOptions = [
-    'Спортивная одежда',
-    'Кроссовки',
-    'Велосипед',
-    'Шлем',
-    'Вода',
-    'Энергетические гели',
-    'Спортивные часы',
-    'Другое'
-  ]
-
   const handleInputChange = (field: string, value: string | string[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
-    }))
-  }
-
-  const handleEquipmentToggle = (equipment: string) => {
-    setFormData(prev => ({
-      ...prev,
-      equipment: prev.equipment.includes(equipment)
-        ? prev.equipment.filter(item => item !== equipment)
-        : [...prev.equipment, equipment]
     }))
   }
 
@@ -87,7 +64,7 @@ const CreateTrainingPage: React.FC = () => {
     try {
       const id = Date.now()
       const start = new Date(`${formData.startDate}T${formData.startTime}`)
-      const end = new Date(`${formData.startDate}T${formData.endTime}`)
+      const end = formData.endTime ? new Date(`${formData.startDate}T${formData.endTime}`) : undefined
 
       const training: Event = {
         id,
@@ -97,7 +74,7 @@ const CreateTrainingPage: React.FC = () => {
         endDate: end,
         location: formData.location,
         city: formData.city,
-        address: formData.address || undefined,
+        address: undefined,
         maxParticipants: formData.maxParticipants ? parseInt(formData.maxParticipants) : undefined,
         currentParticipants: 0,
         price: 0,
@@ -122,7 +99,6 @@ const CreateTrainingPage: React.FC = () => {
         pace: formData.pace || undefined,
         duration: formData.duration ? parseInt(formData.duration) : undefined,
         difficulty: formData.difficulty,
-        equipment: formData.equipment,
         notes: formData.notes || undefined
       }
 
@@ -232,11 +208,10 @@ const CreateTrainingPage: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Время окончания *
+                Время окончания (необязательно)
               </label>
               <input
                 type="time"
-                required
                 value={formData.endTime}
                 onChange={(e) => handleInputChange('endTime', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -253,25 +228,9 @@ const CreateTrainingPage: React.FC = () => {
           </h2>
           
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Место *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.location}
-                onChange={(e) => handleInputChange('location', e.target.value)}
-                placeholder="Например: Парк Горького"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Город *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
                 <input
                   type="text"
                   required
@@ -281,20 +240,19 @@ const CreateTrainingPage: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Адрес
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Место или адрес *</label>
                 <input
                   type="text"
-                  value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  placeholder="ул. Крымский Вал, 9"
+                  required
+                  value={formData.location}
+                  onChange={(e) => handleInputChange('location', e.target.value)}
+                  placeholder="Например: Парк Горького или ул. Крымский Вал, 9"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>
             </div>
+            {/* TODO: точка на карте по желанию */}
           </div>
         </div>
 
@@ -422,27 +380,7 @@ const CreateTrainingPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Необходимое снаряжение */}
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Target className="w-5 h-5 mr-2" />
-            Необходимое снаряжение
-          </h2>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {equipmentOptions.map(equipment => (
-              <label key={equipment} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.equipment.includes(equipment)}
-                  onChange={() => handleEquipmentToggle(equipment)}
-                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-sm text-gray-700">{equipment}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+        {/* Раздел "Необходимое снаряжение" удалён */}
 
         {/* Кнопки */}
         <div className="flex space-x-4">

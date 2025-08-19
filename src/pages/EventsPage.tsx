@@ -68,7 +68,7 @@ const EventsPage: React.FC = () => {
     <div className="p-4 space-y-4">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">События</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Календарь</h1>
         <p className="text-gray-600">Найди интересные события и участвуй</p>
       </div>
 

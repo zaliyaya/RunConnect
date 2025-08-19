@@ -15,7 +15,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigation = [
     { path: '/', icon: Home, label: 'Главная' },
     { path: '/clubs', icon: Users, label: 'Клубы' },
-    { path: '/events', icon: Calendar, label: 'События' },
+    { path: '/events', icon: Calendar, label: 'Календарь' },
     { path: '/profile', icon: User, label: 'Профиль' },
   ]
 

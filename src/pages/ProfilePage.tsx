@@ -1,15 +1,16 @@
 import React from 'react'
 import { useTelegram } from '../hooks/useTelegram'
+import { useEvents } from '../hooks/useEvents'
 import { 
   User, 
   Calendar, 
-  Users, 
   Settings, 
   LogOut
 } from 'lucide-react'
 
 const ProfilePage: React.FC = () => {
   const { user } = useTelegram()
+  const { events } = useEvents()
 
   if (!user) {
     return (
@@ -58,24 +59,29 @@ const ProfilePage: React.FC = () => {
           Активность
         </h3>
         <div className="space-y-4">
+          {/* Мои участия */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
                 <Calendar className="w-4 h-4 text-primary-600" />
               </div>
-              <span className="text-sm text-gray-700">Участие в событиях</span>
+              <span className="text-sm text-gray-700">Мои участия</span>
             </div>
-            <span className="text-sm font-medium text-gray-900">12</span>
+            <span className="text-sm font-medium text-gray-900">{events.filter(e => e.participants.some(p => p.telegramId === user.id)).length}</span>
           </div>
+
+          {/* Мои события */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-secondary-100 rounded-full flex items-center justify-center">
-                <Users className="w-4 h-4 text-secondary-600" />
+                <Calendar className="w-4 h-4 text-secondary-600" />
               </div>
-              <span className="text-sm text-gray-700">Членство в клубах</span>
+              <span className="text-sm text-gray-700">Мои события</span>
             </div>
-            <span className="text-sm font-medium text-gray-900">3</span>
+            <span className="text-sm font-medium text-gray-900">{events.filter(e => e.organizer.type === 'user' && e.organizer.id === user.id).length}</span>
           </div>
+
+          {/* Мои клубы: временный плейсхолдер (нет данных о клубах пользователя) */}
         </div>
       </div>
 
