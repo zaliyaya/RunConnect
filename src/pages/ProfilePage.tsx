@@ -10,7 +10,7 @@ import {
 
 const ProfilePage: React.FC = () => {
   const { user } = useTelegram()
-  const { events } = useEvents()
+  const { myJoinedEventsCount, myCreatedEventsCount } = useEvents()
 
   if (!user) {
     return (
@@ -67,7 +67,7 @@ const ProfilePage: React.FC = () => {
               </div>
               <span className="text-sm text-gray-700">Мои участия</span>
             </div>
-            <span className="text-sm font-medium text-gray-900">{events.filter(e => e.participants.some(p => p.telegramId === user.id)).length}</span>
+            <span className="text-sm font-medium text-gray-900">{myJoinedEventsCount}</span>
           </div>
 
           {/* Мои события */}
@@ -78,10 +78,8 @@ const ProfilePage: React.FC = () => {
               </div>
               <span className="text-sm text-gray-700">Мои события</span>
             </div>
-            <span className="text-sm font-medium text-gray-900">{events.filter(e => e.organizer.type === 'user' && e.organizer.id === user.id).length}</span>
+            <span className="text-sm font-medium text-gray-900">{myCreatedEventsCount}</span>
           </div>
-
-          {/* Мои клубы: временный плейсхолдер (нет данных о клубах пользователя) */}
         </div>
       </div>
 

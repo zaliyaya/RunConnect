@@ -25,7 +25,7 @@ const EventDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useTelegram()
-  const { getEventById, joinEvent, leaveEvent } = useEvents()
+  const { getEventById, joinEvent, leaveEvent, deleteEvent } = useEvents()
 
   const event: Event | undefined = id ? getEventById(parseInt(id)) : undefined
 
@@ -124,6 +124,15 @@ const EventDetailPage: React.FC = () => {
   const handleLeave = async () => {
     if (!user) return
     leaveEvent(event.id, user.id)
+  }
+
+  const handleDelete = async () => {
+    if (!isOrganizer) return
+    
+    if (confirm('Вы уверены, что хотите удалить это событие? Это действие нельзя отменить.')) {
+      deleteEvent(event.id)
+      navigate('/events')
+    }
   }
 
   return (
@@ -288,7 +297,10 @@ const EventDetailPage: React.FC = () => {
               <Edit className="w-5 h-5" />
               <span>Редактировать</span>
             </button>
-            <button className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+            <button 
+              onClick={handleDelete}
+              className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
               <Trash2 className="w-5 h-5" />
               <span>Удалить</span>
             </button>
