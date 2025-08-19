@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Home, Users, Calendar, User, Search } from 'lucide-react'
+import { Home, Calendar, User } from 'lucide-react'
 import { useTelegram } from '../hooks/useTelegram'
 
 interface LayoutProps {
@@ -14,7 +14,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const navigation = [
     { path: '/', icon: Home, label: 'Главная' },
-    { path: '/clubs', icon: Users, label: 'Клубы' },
     { path: '/events', icon: Calendar, label: 'Календарь' },
     { path: '/profile', icon: User, label: 'Профиль' },
   ]

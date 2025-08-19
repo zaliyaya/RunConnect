@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTelegram } from '../hooks/useTelegram'
-import { Users, Calendar } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 
 const LoginPage: React.FC = () => {
   const { user } = useTelegram()
@@ -10,9 +10,7 @@ const LoginPage: React.FC = () => {
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
         {/* Логотип и заголовок */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-10 h-10 text-white" />
-          </div>
+          <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4"></div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">YoungGo</h1>
           <p className="text-gray-600">Сообщество бегунов и любителей спорта</p>
         </div>
@@ -20,16 +18,10 @@ const LoginPage: React.FC = () => {
         {/* Информация о приложении */}
         <div className="space-y-4 mb-8">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-              <Users className="w-4 h-4 text-primary-600" />
-            </div>
-            <span className="text-sm text-gray-700">Найди свой беговой клуб</span>
-          </div>
-          <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-secondary-100 rounded-full flex items-center justify-center">
               <Calendar className="w-4 h-4 text-secondary-600" />
             </div>
-            <span className="text-sm text-gray-700">Участвуй в событиях</span>
+            <span className="text-sm text-gray-700">Участвуй в тренировках</span>
           </div>
         </div>
 

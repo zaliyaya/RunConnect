@@ -113,7 +113,7 @@ const EventDetailPage: React.FC = () => {
       bio: undefined,
       createdAt: new Date(),
       updatedAt: new Date(),
-      clubs: [],
+      
       events: [],
       isTrainer: false,
       isOrganizer: false,
@@ -271,7 +271,7 @@ const EventDetailPage: React.FC = () => {
           )}
           <div>
             <p className="font-medium text-gray-900">{event.organizer.name}</p>
-            <p className="text-sm text-gray-600">{event.organizer.type}</p>
+            <p className="text-sm text-gray-600">Организатор</p>
           </div>
         </div>
       </div>

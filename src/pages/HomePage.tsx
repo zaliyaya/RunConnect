@@ -2,80 +2,14 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
   Search, 
-  Users, 
   Calendar, 
-  TrendingUp, 
-  MapPin,
-  Clock,
   Activity
 } from 'lucide-react'
 import { useTelegram } from '../hooks/useTelegram'
-import { Event, Club } from '../types'
+import { Event } from '../types'
 import EventCard from '../components/EventCard'
-import ClubCard from '../components/ClubCard'
 import { useEvents } from '../hooks/useEvents'
 
-// Моковые данные для демонстрации клубов
-const mockClubs: Club[] = [
-  {
-    id: 1,
-    name: 'Беговой клуб "Стрела"',
-    description: 'Дружелюбное сообщество бегунов всех уровней. Регулярные тренировки и участие в соревнованиях.',
-    city: 'Москва',
-    avatar: 'https://via.placeholder.com/64',
-    isPrivate: false,
-    isModerated: false,
-    membersCount: 156,
-    maxMembers: 200,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    owner: {
-      id: 1,
-      telegramId: 123456789,
-      firstName: 'Алексей',
-      lastName: 'Петров',
-      clubs: [],
-      events: [],
-      isTrainer: false,
-      isOrganizer: true,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    members: [],
-    moderators: [],
-    events: [],
-    tags: ['бег', 'тренировки', 'соревнования']
-  },
-  {
-    id: 2,
-    name: 'Триатлон клуб "Железный человек"',
-    description: 'Специализируемся на подготовке к триатлону. Плавание, велосипед, бег.',
-    city: 'Москва',
-    avatar: 'https://via.placeholder.com/64',
-    isPrivate: true,
-    isModerated: true,
-    membersCount: 89,
-    maxMembers: 100,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    owner: {
-      id: 2,
-      telegramId: 987654321,
-      firstName: 'Мария',
-      lastName: 'Иванова',
-      clubs: [],
-      events: [],
-      isTrainer: true,
-      isOrganizer: true,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    members: [],
-    moderators: [],
-    events: [],
-    tags: ['триатлон', 'плавание', 'велосипед']
-  }
-]
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate()
@@ -101,9 +35,7 @@ const HomePage: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
           Добро пожаловать в YoungGo!
         </h1>
-        <p className="text-gray-600">
-          Найди свой беговой клуб и участвуй в событиях
-        </p>
+        <p className="text-gray-600">Создавай тренировки и присоединяйся к ним</p>
       </div>
 
       {/* Поиск */}
@@ -120,21 +52,13 @@ const HomePage: React.FC = () => {
       </div>
 
       {/* Быстрые действия */}
-      <div className="grid grid-cols-3 gap-4">
-        <button
-          onClick={() => navigate('/clubs')}
-          className="flex flex-col items-center p-4 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
-        >
-          <Users className="w-8 h-8 text-primary-600 mb-2" />
-          <span className="text-sm font-medium text-primary-700">Найти клуб</span>
-        </button>
-        
+      <div className="grid grid-cols-2 gap-4">
         <button
           onClick={() => navigate('/events')}
           className="flex flex-col items-center p-4 bg-secondary-50 rounded-lg hover:bg-secondary-100 transition-colors"
         >
           <Calendar className="w-8 h-8 text-secondary-600 mb-2" />
-          <span className="text-sm font-medium text-secondary-700">События</span>
+          <span className="text-sm font-medium text-secondary-700">Календарь</span>
         </button>
 
         <button
@@ -165,24 +89,7 @@ const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Популярные клубы */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Популярные клубы</h2>
-          <button
-            onClick={() => navigate('/clubs')}
-            className="text-primary-600 text-sm font-medium hover:text-primary-700"
-          >
-            Все клубы →
-          </button>
-        </div>
-        
-        <div className="space-y-4">
-          {mockClubs.map((club) => (
-            <ClubCard key={club.id} club={club} />
-          ))}
-        </div>
-      </div>
+      {/* Блок клубов удалён */}
 
       {/* Статистика пользователя */}
       {user && (

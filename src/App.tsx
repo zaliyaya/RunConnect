@@ -3,10 +3,8 @@ import { Routes, Route } from 'react-router-dom'
 import { useTelegram } from './hooks/useTelegram'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
-import ClubsPage from './pages/ClubsPage'
 import EventsPage from './pages/EventsPage'
 import ProfilePage from './pages/ProfilePage'
-import ClubDetailPage from './pages/ClubDetailPage'
 import EventDetailPage from './pages/EventDetailPage'
 import LoginPage from './pages/LoginPage'
 import CreateTrainingPage from './pages/CreateTrainingPage'
@@ -34,8 +32,6 @@ function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/clubs" element={<ClubsPage />} />
-        <Route path="/clubs/:id" element={<ClubDetailPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/events/:id" element={<EventDetailPage />} />
         <Route path="/events/:id/edit" element={<EditTrainingPage />} />

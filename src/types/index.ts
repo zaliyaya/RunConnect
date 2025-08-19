@@ -12,37 +12,9 @@ export interface User {
   bio?: string
   createdAt: Date
   updatedAt: Date
-  clubs: Club[]
   events: Event[]
   isTrainer: boolean
   isOrganizer: boolean
-}
-
-// Клуб
-export interface Club {
-  id: number
-  name: string
-  description: string
-  city: string
-  avatar?: string
-  coverImage?: string
-  isPrivate: boolean
-  isModerated: boolean
-  membersCount: number
-  maxMembers?: number
-  createdAt: Date
-  updatedAt: Date
-  owner: User
-  members: User[]
-  moderators: User[]
-  events: Event[]
-  tags: string[]
-  rules?: string
-  contactInfo?: {
-    phone?: string
-    email?: string
-    website?: string
-  }
 }
 
 // Событие
@@ -67,7 +39,6 @@ export interface Event {
   registrationRequired: boolean
   registrationDeadline?: Date
   organizer: Organizer
-  club?: Club
   participants: User[]
   tags: string[]
   images: string[]
@@ -85,10 +56,10 @@ export interface Event {
   notes?: string
 }
 
-// Организатор (может быть пользователь, клуб, тренер или компания)
+// Организатор (может быть пользователь, тренер или компания)
 export interface Organizer {
   id: number
-  type: 'user' | 'club' | 'trainer' | 'company'
+  type: 'user' | 'trainer' | 'company'
   name: string
   description?: string
   avatar?: string
@@ -114,24 +85,11 @@ export interface Trainer {
   bio: string
 }
 
-// Чат сообщение
-export interface ChatMessage {
-  id: number
-  clubId: number
-  userId: number
-  user: User
-  content: string
-  type: 'text' | 'image' | 'file'
-  attachments?: string[]
-  createdAt: Date
-  updatedAt: Date
-}
-
 // Подписка
 export interface Subscription {
   id: number
   userId: number
-  type: 'premium' | 'club' | 'event'
+  type: 'premium' | 'event'
   targetId?: number
   price: number
   currency: string
@@ -161,7 +119,7 @@ export interface Notification {
   userId: number
   title: string
   message: string
-  type: 'event' | 'club' | 'payment' | 'system'
+  type: 'event' | 'payment' | 'system'
   isRead: boolean
   data?: Record<string, any>
   createdAt: Date
@@ -180,13 +138,6 @@ export interface EventFilters {
   isTraining?: boolean
   sportType?: string
   difficulty?: string
-}
-
-export interface ClubFilters {
-  city?: string
-  isPrivate?: boolean
-  tags?: string[]
-  hasEvents?: boolean
 }
 
 // API ответы
