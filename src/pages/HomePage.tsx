@@ -66,7 +66,7 @@ const HomePage: React.FC = () => {
           className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
         >
           <Activity className="w-8 h-8 text-purple-600 mb-2" />
-          <span className="text-sm font-medium text-purple-700">Создать тренировку</span>
+          <span className="text-sm font-medium text-purple-700">Создать событие</span>
         </button>
       </div>
 

@@ -102,7 +102,8 @@ function seedEvents(): Event[] {
       images: ['https://via.placeholder.com/300x200'],
       status: 'upcoming',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      eventType: 'training'
     },
     {
       id: 2,
@@ -135,7 +136,8 @@ function seedEvents(): Event[] {
       distance: 10,
       pace: '5:30',
       duration: 60,
-      difficulty: 'intermediate'
+      difficulty: 'intermediate',
+      eventType: 'training'
     }
   ]
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Filter, Calendar, Plus, Activity } from 'lucide-react'
 import { EventFilters } from '../types'
@@ -15,50 +15,56 @@ const EventsPage: React.FC = () => {
 
   const now = new Date()
 
-  const filteredEvents = events.filter(event => {
-    // Hide/show past events
-    const isPast = new Date(event.startDate) < now
-    if (showPast ? !isPast : isPast) return false
+  // Сортируем события по времени (от ближайших к дальним)
+  const sortedAndFilteredEvents = useMemo(() => {
+    const filtered = events.filter(event => {
+      // Hide/show past events
+      const isPast = new Date(event.startDate) < now
+      if (showPast ? !isPast : isPast) return false
 
-    // Search by title/description
-    if (searchQuery && !event.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !event.description.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false
-    }
+      // Search by title/description
+      if (searchQuery && !event.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+          !event.description.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false
+      }
 
-    // City
-    if (filters.city && event.city !== filters.city) return false
+      // City
+      if (filters.city && event.city !== filters.city) return false
 
-    // Date range
-    if (filters.dateFrom && new Date(event.startDate) < filters.dateFrom) return false
-    if (filters.dateTo && new Date(event.startDate) > filters.dateTo) return false
+      // Date range
+      if (filters.dateFrom && new Date(event.startDate) < filters.dateFrom) return false
+      if (filters.dateTo && new Date(event.startDate) > filters.dateTo) return false
 
-    // Price
-    if (filters.priceFrom && event.price < filters.priceFrom) return false
-    if (filters.priceTo && event.price > filters.priceTo) return false
+      // Price
+      if (filters.priceFrom && event.price < filters.priceFrom) return false
+      if (filters.priceTo && event.price > filters.priceTo) return false
 
-    // Free
-    if (filters.isFree !== undefined && event.isFree !== filters.isFree) return false
+      // Free
+      if (filters.isFree !== undefined && event.isFree !== filters.isFree) return false
 
-    // Training type
-    if (filters.isTraining !== undefined && event.isTraining !== filters.isTraining) return false
+      // Training type
+      if (filters.isTraining !== undefined && event.isTraining !== filters.isTraining) return false
 
-    // Sport type
-    if (filters.sportType && event.sportType !== filters.sportType) return false
+      // Sport type
+      if (filters.sportType && event.sportType !== filters.sportType) return false
 
-    // Difficulty
-    if (filters.difficulty && event.difficulty !== filters.difficulty) return false
+      // Difficulty
+      if (filters.difficulty && event.difficulty !== filters.difficulty) return false
 
-    // Tags
-    if (filters.tags && filters.tags.length > 0) {
-      const hasMatchingTag = filters.tags.some(tag => 
-        event.tags.some(eventTag => eventTag.toLowerCase().includes(tag.toLowerCase()))
-      )
-      if (!hasMatchingTag) return false
-    }
+      // Tags
+      if (filters.tags && filters.tags.length > 0) {
+        const hasMatchingTag = filters.tags.some(tag => 
+          event.tags.some(eventTag => eventTag.toLowerCase().includes(tag.toLowerCase()))
+        )
+        if (!hasMatchingTag) return false
+      }
 
-    return true
-  })
+      return true
+    })
+
+    // Сортируем по времени (от ближайших к дальним)
+    return filtered.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+  }, [events, searchQuery, filters, showPast, now])
 
   const cities = Array.from(new Set(events.map(event => event.city)))
   const allTags = Array.from(new Set(events.flatMap(event => event.tags)))
@@ -79,7 +85,7 @@ const EventsPage: React.FC = () => {
           className="flex items-center space-x-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
         >
           <Plus className="w-5 h-5" />
-          <span>Создать тренировку</span>
+          <span>Создать событие</span>
         </button>
       </div>
 
@@ -307,13 +313,13 @@ const EventsPage: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">
-            Найдено событий: {filteredEvents.length}
+            Найдено событий: {sortedAndFilteredEvents.length}
           </h2>
         </div>
 
-        {filteredEvents.length > 0 ? (
+        {sortedAndFilteredEvents.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredEvents.map((event) => (
+            {sortedAndFilteredEvents.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
           </div>
@@ -329,7 +335,7 @@ const EventsPage: React.FC = () => {
               className="inline-flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
             >
               <Plus className="w-5 h-5" />
-              <span>Создать тренировку</span>
+              <span>Создать событие</span>
             </button>
           </div>
         )}

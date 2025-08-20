@@ -54,6 +54,8 @@ export interface Event {
   difficulty?: 'beginner' | 'intermediate' | 'advanced'
   equipment?: string[]
   notes?: string
+  // Тип события
+  eventType?: 'training' | 'competition' | 'seminar' | 'masterclass' | 'performance'
 }
 
 // Организатор (может быть пользователь, тренер или компания)

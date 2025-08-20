@@ -84,6 +84,51 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
     }
   }
 
+  const getEventTypeText = (eventType?: string) => {
+    switch (eventType) {
+      case 'training':
+        return 'Тренировка'
+      case 'competition':
+        return 'Соревнование'
+      case 'seminar':
+        return 'Семинар'
+      case 'masterclass':
+        return 'Мастер-класс'
+      case 'performance':
+        return 'Выступление'
+      default:
+        return 'Событие'
+    }
+  }
+
+  // Проверяем, будет ли событие в ближайшие 3 дня (72 часа)
+  const isSoon = () => {
+    const eventDate = new Date(event.startDate)
+    const now = new Date()
+    const diffTime = eventDate.getTime() - now.getTime()
+    const diffHours = diffTime / (1000 * 60 * 60)
+    return diffHours <= 72 && diffHours > 0
+  }
+
+  // Упорядочиваем теги: сначала статус, потом тип события, потом остальные
+  const getOrderedTags = () => {
+    const tags = [...event.tags]
+    
+    // Добавляем тег "Скоро" если событие в ближайшие 3 дня
+    if (isSoon()) {
+      tags.unshift('Скоро')
+    }
+    
+    // Добавляем тип события
+    if (event.eventType) {
+      tags.unshift(getEventTypeText(event.eventType))
+    }
+    
+    return tags
+  }
+
+  const orderedTags = getOrderedTags()
+
   return (
     <div 
       className="card cursor-pointer hover:shadow-md transition-shadow relative"
@@ -115,11 +160,6 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
           <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(event.status)}`}>
             {getStatusText(event.status)}
           </span>
-          {event.isTraining && (
-            <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full">
-              Тренировка
-            </span>
-          )}
         </div>
       </div>
 
@@ -154,14 +194,9 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
         </div>
       </div>
 
-      {/* Информация о тренировке */}
+      {/* Информация о тренировке (без заголовка) */}
       {event.isTraining && (
         <div className="mb-4 p-3 bg-purple-50 rounded-lg">
-          <div className="flex items-center space-x-2 mb-2">
-            <Activity className="w-4 h-4 text-purple-600" />
-            <span className="text-sm font-medium text-purple-800">Параметры тренировки</span>
-          </div>
-          
           <div className="grid grid-cols-2 gap-2 text-xs">
             {event.sportType && (
               <div className="flex items-center space-x-1">
@@ -204,19 +239,25 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
       )}
 
       {/* Теги */}
-      {event.tags.length > 0 && (
+      {orderedTags.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-3">
-          {event.tags.slice(0, 3).map((tag, index) => (
+          {orderedTags.slice(0, 4).map((tag, index) => (
             <span 
               key={index} 
-              className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full"
+              className={`px-2 py-1 text-xs rounded-full ${
+                tag === 'Скоро' 
+                  ? 'bg-orange-100 text-orange-700' 
+                  : tag === getEventTypeText(event.eventType)
+                  ? 'bg-purple-100 text-purple-700'
+                  : 'bg-gray-100 text-gray-700'
+              }`}
             >
               {tag}
             </span>
           ))}
-          {event.tags.length > 3 && (
+          {orderedTags.length > 4 && (
             <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
-              +{event.tags.length - 3}
+              +{orderedTags.length - 4}
             </span>
           )}
         </div>

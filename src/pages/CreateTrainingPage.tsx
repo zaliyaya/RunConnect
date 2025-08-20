@@ -28,6 +28,7 @@ const CreateTrainingPage: React.FC = () => {
     location: '',
     city: '',
     maxParticipants: '',
+    eventType: 'training' as 'training' | 'competition' | 'seminar' | 'masterclass' | 'performance',
     sportType: '',
     distance: '',
     pace: '',
@@ -35,6 +36,14 @@ const CreateTrainingPage: React.FC = () => {
     difficulty: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
     notes: ''
   })
+
+  const eventTypes = [
+    { value: 'training', label: 'Тренировка' },
+    { value: 'competition', label: 'Соревнование' },
+    { value: 'seminar', label: 'Семинар' },
+    { value: 'masterclass', label: 'Мастер-класс' },
+    { value: 'performance', label: 'Выступление' }
+  ]
 
   const sportTypes = [
     'Бег',
@@ -93,13 +102,14 @@ const CreateTrainingPage: React.FC = () => {
         status: start > new Date() ? 'upcoming' : 'ongoing',
         createdAt: new Date(),
         updatedAt: new Date(),
-        isTraining: true,
+        isTraining: formData.eventType === 'training',
         sportType: formData.sportType,
         distance: formData.distance ? parseFloat(formData.distance) : undefined,
         pace: formData.pace || undefined,
         duration: formData.duration ? parseInt(formData.duration) : undefined,
         difficulty: formData.difficulty,
-        notes: formData.notes || undefined
+        notes: formData.notes || undefined,
+        eventType: formData.eventType
       }
 
       addEvent(training)
@@ -133,10 +143,31 @@ const CreateTrainingPage: React.FC = () => {
         >
           <ArrowLeft className="w-5 h-5 text-gray-600" />
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">Создать тренировку</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Создать событие</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Тип события */}
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Тип события</h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            {eventTypes.map((type) => (
+              <button
+                key={type.value}
+                type="button"
+                onClick={() => handleInputChange('eventType', type.value)}
+                className={`p-3 rounded-lg border-2 transition-colors ${
+                  formData.eventType === type.value
+                    ? 'border-purple-500 bg-purple-50 text-purple-700'
+                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                }`}
+              >
+                <div className="text-sm font-medium">{type.label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Основная информация */}
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Основная информация</h2>
@@ -144,7 +175,7 @@ const CreateTrainingPage: React.FC = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Название тренировки *
+                Название события *
               </label>
               <input
                 type="text"
@@ -163,7 +194,7 @@ const CreateTrainingPage: React.FC = () => {
               <textarea
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="Опишите тренировку, что планируете делать..."
+                placeholder="Опишите событие, что планируете делать..."
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
@@ -260,7 +291,7 @@ const CreateTrainingPage: React.FC = () => {
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <Activity className="w-5 h-5 mr-2" />
-            Параметры тренировки
+            Параметры события
           </h2>
           
           <div className="space-y-4">
@@ -347,7 +378,7 @@ const CreateTrainingPage: React.FC = () => {
               <textarea
                 value={formData.notes}
                 onChange={(e) => handleInputChange('notes', e.target.value)}
-                placeholder="Дополнительная информация о тренировке..."
+                placeholder="Дополнительная информация о событии..."
                 rows={2}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
@@ -380,8 +411,6 @@ const CreateTrainingPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Раздел "Необходимое снаряжение" удалён */}
-
         {/* Кнопки */}
         <div className="flex space-x-4">
           <button
@@ -404,7 +433,7 @@ const CreateTrainingPage: React.FC = () => {
             ) : (
               <>
                 <Save className="w-4 h-4" />
-                <span>Создать тренировку</span>
+                <span>Создать событие</span>
               </>
             )}
           </button>
