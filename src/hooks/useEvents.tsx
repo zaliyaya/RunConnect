@@ -1,24 +1,27 @@
 import { createContext, useContext, useMemo, useState, ReactNode, useEffect } from 'react'
 import { Event, User } from '../types'
 import { useTelegram } from './useTelegram'
+import { loadSharedEvents, saveSharedEvents, setupEventSync } from '../services/sharedStorage'
 
 interface EventsContextValue {
   events: Event[]
-  addEvent: (event: Event) => void
-  updateEvent: (eventId: number, updates: Partial<Event>) => void
-  deleteEvent: (eventId: number) => void
+  addEvent: (event: Event) => Promise<void>
+  updateEvent: (eventId: number, updates: Partial<Event>) => Promise<void>
+  deleteEvent: (eventId: number) => Promise<void>
   joinEvent: (eventId: number, participant: User) => void
   leaveEvent: (eventId: number, participantTelegramId: number) => void
   getEventById: (id: number) => Event | undefined
   myJoinedEventsCount: number
   myCreatedEventsCount: number
   myClubs: any[]
+  isLoading: boolean
 }
 
 const EventsContext = createContext<EventsContextValue | undefined>(undefined)
 
-const STORAGE_KEY = 'younggo_events'
-const PARTICIPANTS_STORAGE_KEY = 'younggo_participants'
+const STORAGE_KEY = 'younggo_events_v2'
+const PARTICIPANTS_STORAGE_KEY = 'younggo_participants_v2'
+const SHARED_EVENTS_KEY = 'younggo_shared_events'
 
 // Интерфейс для хранения участников отдельно
 interface EventParticipants {
@@ -26,12 +29,26 @@ interface EventParticipants {
   participants: User[]
 }
 
-function loadEventsFromStorage(): Event[] {
+async function loadEventsFromStorage(): Promise<Event[]> {
   try {
+    // Загружаем события из общего хранилища
+    const sharedEvents = await loadSharedEvents()
+    if (sharedEvents.length > 0) {
+      // Преобразуем строки дат обратно в объекты Date
+      return sharedEvents.map((event: any) => ({
+        ...event,
+        startDate: new Date(event.startDate),
+        endDate: event.endDate ? new Date(event.endDate) : undefined,
+        registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline) : undefined,
+        createdAt: new Date(event.createdAt),
+        updatedAt: new Date(event.updatedAt)
+      }))
+    }
+    
+    // Если общих событий нет, загружаем локальные
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
       const parsed = JSON.parse(stored)
-      // Преобразуем строки дат обратно в объекты Date
       return parsed.map((event: any) => ({
         ...event,
         startDate: new Date(event.startDate),
@@ -59,8 +76,11 @@ function loadParticipantsFromStorage(): EventParticipants[] {
   return []
 }
 
-function saveEventsToStorage(events: Event[]): void {
+async function saveEventsToStorage(events: Event[]): Promise<void> {
   try {
+    // Сохраняем в общее хранилище для всех пользователей
+    await saveSharedEvents(events)
+    // Также сохраняем локально как резервную копию
     localStorage.setItem(STORAGE_KEY, JSON.stringify(events))
   } catch (error) {
     console.error('Error saving events to storage:', error)
@@ -143,14 +163,57 @@ function seedEvents(): Event[] {
 }
 
 export function EventsProvider({ children }: { children: ReactNode }) {
-  const [events, setEvents] = useState<Event[]>(loadEventsFromStorage)
+  const [events, setEvents] = useState<Event[]>([])
   const [eventParticipants, setEventParticipants] = useState<EventParticipants[]>(loadParticipantsFromStorage)
   const { user } = useTelegram()
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Сохраняем события в localStorage при каждом изменении
+  // Загружаем события при инициализации
   useEffect(() => {
-    saveEventsToStorage(events)
-  }, [events])
+    const loadEvents = async () => {
+      try {
+        const loadedEvents = await loadEventsFromStorage()
+        setEvents(loadedEvents)
+      } catch (error) {
+        console.error('Error loading events:', error)
+        setEvents(seedEvents())
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadEvents()
+  }, [])
+
+  // Сохраняем события в общее хранилище при каждом изменении
+  useEffect(() => {
+    if (!isLoading && events.length > 0) {
+      saveEventsToStorage(events)
+    }
+  }, [events, isLoading])
+
+  // Настраиваем синхронизацию событий в реальном времени
+  useEffect(() => {
+    if (!isLoading) {
+      const cleanup = setupEventSync((sharedEvents) => {
+        // Преобразуем строки дат обратно в объекты Date
+        const parsedEvents = sharedEvents.map((event: any) => ({
+          ...event,
+          startDate: new Date(event.startDate),
+          endDate: event.endDate ? new Date(event.endDate) : undefined,
+          registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline) : undefined,
+          createdAt: new Date(event.createdAt),
+          updatedAt: new Date(event.updatedAt)
+        }))
+        
+        // Обновляем события только если они отличаются
+        if (JSON.stringify(parsedEvents) !== JSON.stringify(events)) {
+          setEvents(parsedEvents)
+        }
+      })
+      
+      return cleanup
+    }
+  }, [isLoading, events])
 
   // Сохраняем участников в localStorage при каждом изменении
   useEffect(() => {
@@ -175,16 +238,22 @@ export function EventsProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const addEvent = (event: Event) => {
-    setEvents(prev => [event, ...prev])
+  const addEvent = async (event: Event) => {
+    const newEvents = [event, ...events]
+    setEvents(newEvents)
+    await saveEventsToStorage(newEvents)
   }
 
-  const updateEvent = (eventId: number, updates: Partial<Event>) => {
-    setEvents(prev => prev.map(e => e.id === eventId ? { ...e, ...updates, updatedAt: new Date() } : e))
+  const updateEvent = async (eventId: number, updates: Partial<Event>) => {
+    const updatedEvents = events.map(e => e.id === eventId ? { ...e, ...updates, updatedAt: new Date() } : e)
+    setEvents(updatedEvents)
+    await saveEventsToStorage(updatedEvents)
   }
 
-  const deleteEvent = (eventId: number) => {
-    setEvents(prev => prev.filter(e => e.id !== eventId))
+  const deleteEvent = async (eventId: number) => {
+    const filteredEvents = events.filter(e => e.id !== eventId)
+    setEvents(filteredEvents)
+    await saveEventsToStorage(filteredEvents)
     // Также удаляем участников события
     setEventParticipants(prev => prev.filter(ep => ep.eventId !== eventId))
   }
@@ -257,8 +326,9 @@ export function EventsProvider({ children }: { children: ReactNode }) {
     getEventById,
     myJoinedEventsCount,
     myCreatedEventsCount,
-    myClubs
-  }), [events, myJoinedEventsCount, myCreatedEventsCount, myClubs])
+    myClubs,
+    isLoading
+  }), [events, myJoinedEventsCount, myCreatedEventsCount, myClubs, isLoading])
 
   return (
     <EventsContext.Provider value={value}>

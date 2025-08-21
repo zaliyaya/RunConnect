@@ -97,7 +97,7 @@ const CreateTrainingPage: React.FC = () => {
           avatar: user.photo_url
         },
         participants: [],
-        tags: formData.sportType ? [formData.sportType] : [],
+        tags: [], // Не добавляем sportType в теги
         images: [],
         status: start > new Date() ? 'upcoming' : 'ongoing',
         createdAt: new Date(),
@@ -112,10 +112,7 @@ const CreateTrainingPage: React.FC = () => {
         eventType: formData.eventType
       }
 
-      addEvent(training)
-      
-      // Имитация API вызова
-      await new Promise(resolve => setTimeout(resolve, 300))
+      await addEvent(training)
       
       navigate('/events')
     } catch (error) {

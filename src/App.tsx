@@ -9,6 +9,7 @@ import EventDetailPage from './pages/EventDetailPage'
 import LoginPage from './pages/LoginPage'
 import CreateTrainingPage from './pages/CreateTrainingPage'
 import EditTrainingPage from './pages/EditTrainingPage'
+import SharedStorageTest from './components/SharedStorageTest'
 
 function App() {
   const { user, isReady } = useTelegram()
@@ -38,6 +39,7 @@ function App() {
         <Route path="/create-training" element={<CreateTrainingPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
+      <SharedStorageTest />
     </Layout>
   )
 }
