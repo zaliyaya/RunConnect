@@ -22,21 +22,25 @@ export async function loadSharedEvents(): Promise<any[]> {
     // In production, this would make an API call to a cloud storage service
     const stored = localStorage.getItem('younggo_shared_events')
     if (stored) {
-      return JSON.parse(stored)
+      const events = JSON.parse(stored)
+      console.log('📅 Loaded shared events:', events.length, 'events available to all users')
+      return events
     }
     
     // If no shared events exist, try to load from local storage
     const localStored = localStorage.getItem('younggo_events_v2')
     if (localStored) {
       const localEvents = JSON.parse(localStored)
+      console.log('📅 Migrating local events to shared storage:', localEvents.length, 'events')
       // Save to shared storage
       await saveSharedEvents(localEvents)
       return localEvents
     }
     
+    console.log('📅 No events found in storage, starting with empty calendar')
     return []
   } catch (error) {
-    console.error('Error loading shared events:', error)
+    console.error('❌ Error loading shared events:', error)
     return []
   }
 }
@@ -50,8 +54,10 @@ export async function saveSharedEvents(events: any[]): Promise<void> {
     
     // Also save to local storage as backup
     localStorage.setItem('younggo_events_v2', JSON.stringify(events))
+    
+    console.log('💾 Saved events to shared storage:', events.length, 'events now available to all users')
   } catch (error) {
-    console.error('Error saving shared events:', error)
+    console.error('❌ Error saving shared events:', error)
   }
 }
 

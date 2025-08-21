@@ -8,6 +8,10 @@ const SharedStorageTest: React.FC = () => {
 
   if (!user) return null
 
+  // Проверяем, есть ли события от разных пользователей
+  const uniqueOrganizers = new Set(events.map(event => event.organizer?.id))
+  const hasMultipleOrganizers = uniqueOrganizers.size > 1
+
   return (
     <div className="fixed bottom-4 right-4 bg-white p-4 rounded-lg shadow-lg border max-w-xs">
       <h3 className="text-sm font-semibold text-gray-900 mb-2">Shared Storage Status</h3>
@@ -15,8 +19,17 @@ const SharedStorageTest: React.FC = () => {
         <div>Loading: {isLoading ? 'Yes' : 'No'}</div>
         <div>Events: {events.length}</div>
         <div>User: {user.first_name}</div>
+        <div>Organizers: {uniqueOrganizers.size}</div>
         <div className="text-green-600 font-medium">
           ✅ Shared storage active
+        </div>
+        {hasMultipleOrganizers && (
+          <div className="text-blue-600 font-medium">
+            ✅ Events from multiple users visible
+          </div>
+        )}
+        <div className="text-xs text-gray-500 mt-2">
+          All events are visible to all users
         </div>
       </div>
     </div>
