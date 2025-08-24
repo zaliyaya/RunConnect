@@ -22,10 +22,11 @@ const CreateTrainingPage: React.FC = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    startDate: '',
+    date: '',
     startTime: '',
     endTime: '',
-    location: '',
+    place: '',
+    address: '',
     city: '',
     maxParticipants: '',
     eventType: 'training' as 'training' | 'competition' | 'seminar' | 'masterclass' | 'performance',
@@ -66,25 +67,23 @@ const CreateTrainingPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
     if (!user) return
 
-    setIsSubmitting(true)
-
     try {
-      const id = Date.now()
-      const start = new Date(`${formData.startDate}T${formData.startTime}`)
-      const end = formData.endTime ? new Date(`${formData.startDate}T${formData.endTime}`) : undefined
+      const start = new Date(`${formData.date}T${formData.startTime}`)
+      const end = formData.endTime ? new Date(`${formData.date}T${formData.endTime}`) : undefined
 
       const training: Event = {
-        id,
+        id: Date.now() + Math.random(), // Уникальный ID
         title: formData.title,
         description: formData.description,
         startDate: start,
         endDate: end,
-        location: formData.location,
+        location: formData.place || formData.address || '',
         city: formData.city,
-        address: undefined,
-        maxParticipants: formData.maxParticipants ? parseInt(formData.maxParticipants) : undefined,
+        address: formData.address,
+        maxParticipants: formData.maxParticipants || undefined,
         currentParticipants: 0,
         price: 0,
         currency: 'RUB',
@@ -93,7 +92,7 @@ const CreateTrainingPage: React.FC = () => {
         organizer: {
           id: user.id,
           type: 'user',
-          name: `${user.first_name}${user.last_name ? ' ' + user.last_name : ''}`,
+          name: user.first_name || 'Пользователь',
           avatar: user.photo_url
         },
         participants: [],
@@ -104,11 +103,10 @@ const CreateTrainingPage: React.FC = () => {
         updatedAt: new Date(),
         isTraining: formData.eventType === 'training',
         sportType: formData.sportType,
-        distance: formData.distance ? parseFloat(formData.distance) : undefined,
-        pace: formData.pace || undefined,
-        duration: formData.duration ? parseInt(formData.duration) : undefined,
+        distance: formData.distance,
+        pace: formData.pace,
+        duration: formData.duration,
         difficulty: formData.difficulty,
-        notes: formData.notes || undefined,
         eventType: formData.eventType
       }
 
@@ -116,9 +114,7 @@ const CreateTrainingPage: React.FC = () => {
       
       navigate('/events')
     } catch (error) {
-      console.error('Ошибка при создании тренировки:', error)
-    } finally {
-      setIsSubmitting(false)
+      console.error('Error creating training:', error)
     }
   }
 
@@ -214,8 +210,8 @@ const CreateTrainingPage: React.FC = () => {
               <input
                 type="date"
                 required
-                value={formData.startDate}
-                onChange={(e) => handleInputChange('startDate', e.target.value)}
+                value={formData.date}
+                onChange={(e) => handleInputChange('date', e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
@@ -273,8 +269,8 @@ const CreateTrainingPage: React.FC = () => {
                 <input
                   type="text"
                   required
-                  value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
+                  value={formData.place}
+                  onChange={(e) => handleInputChange('place', e.target.value)}
                   placeholder="Например: Парк Горького или ул. Крымский Вал, 9"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />

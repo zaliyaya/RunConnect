@@ -11,25 +11,29 @@ const SharedStorageTest: React.FC = () => {
   // Проверяем, есть ли события от разных пользователей
   const uniqueOrganizers = new Set(events.map(event => event.organizer?.id))
   const hasMultipleOrganizers = uniqueOrganizers.size > 1
+  const myEventsCount = events.filter(event => event.organizer?.id === user.id).length
+  const otherEventsCount = events.length - myEventsCount
 
   return (
     <div className="fixed bottom-4 right-4 bg-white p-4 rounded-lg shadow-lg border max-w-xs">
-      <h3 className="text-sm font-semibold text-gray-900 mb-2">Shared Storage Status</h3>
+      <h3 className="text-sm font-semibold text-gray-900 mb-2">Global Sync Status</h3>
       <div className="text-xs space-y-1">
         <div>Loading: {isLoading ? 'Yes' : 'No'}</div>
-        <div>Events: {events.length}</div>
-        <div>User: {user.first_name}</div>
+        <div>Total Events: {events.length}</div>
+        <div>My Events: {myEventsCount}</div>
+        <div>Other Events: {otherEventsCount}</div>
         <div>Organizers: {uniqueOrganizers.size}</div>
+        <div>User: {user.first_name} (ID: {user.id})</div>
         <div className="text-green-600 font-medium">
-          ✅ Shared storage active
+          ✅ Global storage active
         </div>
         {hasMultipleOrganizers && (
           <div className="text-blue-600 font-medium">
-            ✅ Events from multiple users visible
+            ✅ Cross-user sync working
           </div>
         )}
         <div className="text-xs text-gray-500 mt-2">
-          All events are visible to all users
+          All events visible to all users
         </div>
       </div>
     </div>

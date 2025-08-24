@@ -1,7 +1,13 @@
 import { createContext, useContext, useMemo, useState, ReactNode, useEffect } from 'react'
 import { Event, User } from '../types'
 import { useTelegram } from './useTelegram'
-import { loadSharedEvents, saveSharedEvents, setupEventSync } from '../services/sharedStorage'
+import { 
+  loadSharedEvents, 
+  saveSharedEvents, 
+  setupEventSync,
+  loadSharedParticipants,
+  saveSharedParticipants
+} from '../services/sharedStorage'
 
 interface EventsContextValue {
   events: Event[]
@@ -19,10 +25,6 @@ interface EventsContextValue {
 
 const EventsContext = createContext<EventsContextValue | undefined>(undefined)
 
-const STORAGE_KEY = 'younggo_events_v2'
-const PARTICIPANTS_STORAGE_KEY = 'younggo_participants_v2'
-const SHARED_EVENTS_KEY = 'younggo_shared_events'
-
 // Интерфейс для хранения участников отдельно
 interface EventParticipants {
   eventId: number
@@ -31,7 +33,7 @@ interface EventParticipants {
 
 async function loadEventsFromStorage(): Promise<Event[]> {
   try {
-    // Загружаем события из общего хранилища
+    // Загружаем события из глобального хранилища
     const sharedEvents = await loadSharedEvents()
     if (sharedEvents.length > 0) {
       // Преобразуем строки дат обратно в объекты Date
@@ -44,31 +46,18 @@ async function loadEventsFromStorage(): Promise<Event[]> {
         updatedAt: new Date(event.updatedAt)
       }))
     }
-    
-    // Если общих событий нет, загружаем локальные
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      return parsed.map((event: any) => ({
-        ...event,
-        startDate: new Date(event.startDate),
-        endDate: event.endDate ? new Date(event.endDate) : undefined,
-        registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline) : undefined,
-        createdAt: new Date(event.createdAt),
-        updatedAt: new Date(event.updatedAt)
-      }))
-    }
   } catch (error) {
     console.error('Error loading events from storage:', error)
   }
-  return seedEvents()
+  return []
 }
 
 function loadParticipantsFromStorage(): EventParticipants[] {
   try {
-    const stored = localStorage.getItem(PARTICIPANTS_STORAGE_KEY)
-    if (stored) {
-      return JSON.parse(stored)
+    // Загружаем участников из глобального хранилища
+    const sharedParticipants = loadSharedParticipants()
+    if (sharedParticipants.length > 0) {
+      return sharedParticipants
     }
   } catch (error) {
     console.error('Error loading participants from storage:', error)
@@ -78,10 +67,8 @@ function loadParticipantsFromStorage(): EventParticipants[] {
 
 async function saveEventsToStorage(events: Event[]): Promise<void> {
   try {
-    // Сохраняем в общее хранилище для всех пользователей
+    // Сохраняем в глобальное хранилище для всех пользователей
     await saveSharedEvents(events)
-    // Также сохраняем локально как резервную копию
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(events))
   } catch (error) {
     console.error('Error saving events to storage:', error)
   }
@@ -89,77 +76,11 @@ async function saveEventsToStorage(events: Event[]): Promise<void> {
 
 function saveParticipantsToStorage(participants: EventParticipants[]): void {
   try {
-    localStorage.setItem(PARTICIPANTS_STORAGE_KEY, JSON.stringify(participants))
+    // Сохраняем участников в глобальное хранилище
+    saveSharedParticipants(participants)
   } catch (error) {
     console.error('Error saving participants to storage:', error)
   }
-}
-
-function seedEvents(): Event[] {
-  return [
-    {
-      id: 1,
-      title: 'Утренняя пробежка в парке Горького',
-      description: 'Присоединяйтесь к нашей утренней пробежке! Подходит для всех уровней подготовки.',
-      startDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
-      location: 'Парк Горького',
-      city: 'Москва',
-      address: 'ул. Крымский Вал, 9',
-      maxParticipants: 50,
-      currentParticipants: 23,
-      price: 0,
-      currency: 'RUB',
-      isFree: true,
-      registrationRequired: true,
-      organizer: {
-        id: 1,
-        type: 'user',
-        name: 'Алексей Петров',
-        avatar: 'https://via.placeholder.com/40'
-      },
-      participants: [],
-      tags: ['бег', 'утро', 'парк'],
-      images: ['https://via.placeholder.com/300x200'],
-      status: 'upcoming',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      eventType: 'training'
-    },
-    {
-      id: 2,
-      title: 'Вечерняя тренировка по бегу',
-      description: 'Интенсивная тренировка для опытных бегунов. Дистанция 10 км.',
-      startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2),
-      location: 'Лужники',
-      city: 'Москва',
-      address: 'Лужнецкая наб., 24',
-      maxParticipants: 30,
-      currentParticipants: 15,
-      price: 0,
-      currency: 'RUB',
-      isFree: true,
-      registrationRequired: true,
-      organizer: {
-        id: 2,
-        type: 'user',
-        name: 'Мария Иванова',
-        avatar: 'https://via.placeholder.com/40'
-      },
-      participants: [],
-      tags: ['бег', 'вечер', 'тренировка'],
-      images: ['https://via.placeholder.com/300x200'],
-      status: 'upcoming',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isTraining: true,
-      sportType: 'Бег',
-      distance: 10,
-      pace: '5:30',
-      duration: 60,
-      difficulty: 'intermediate',
-      eventType: 'training'
-    }
-  ]
 }
 
 export function EventsProvider({ children }: { children: ReactNode }) {
@@ -176,7 +97,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
         setEvents(loadedEvents)
       } catch (error) {
         console.error('Error loading events:', error)
-        setEvents(seedEvents())
+        setEvents([]) // Changed from seedEvents() to []
       } finally {
         setIsLoading(false)
       }

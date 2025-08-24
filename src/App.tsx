@@ -10,6 +10,7 @@ import LoginPage from './pages/LoginPage'
 import CreateTrainingPage from './pages/CreateTrainingPage'
 import EditTrainingPage from './pages/EditTrainingPage'
 import TestEventsPage from './pages/TestEventsPage'
+import SyncTestPage from './pages/SyncTestPage'
 import SharedStorageTest from './components/SharedStorageTest'
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
         <Route path="/create-training" element={<CreateTrainingPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/test-events" element={<TestEventsPage />} />
+        <Route path="/sync-test" element={<SyncTestPage />} />
       </Routes>
       <SharedStorageTest />
     </Layout>
